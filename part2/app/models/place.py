@@ -1,7 +1,4 @@
 from .base_model import BaseModel
-from .review import Review
-from .amenity import Amenity
-from .user import User
 
 
 class Place(BaseModel):
@@ -46,6 +43,7 @@ class Place(BaseModel):
             raise ValueError(
                 "Invalid longitude: must be a float between -180 and 180 degrees.")
 
+        from .user import User
         if not isinstance(owner, User):
             raise TypeError(
                 "Invalid owner: must be an instance of the User class.")
@@ -73,6 +71,7 @@ class Place(BaseModel):
         Raises:
             TypeError: If the argument is not a Review.
         """
+        from .review import Review
         if not isinstance(review, Review):
             raise TypeError(
                 "Invalid review: must be an instance of the Review class.")
@@ -88,6 +87,7 @@ class Place(BaseModel):
         Raises:
             TypeError: If the argument is not an Amenity.
         """
+        from .amenity import Amenity
         if not isinstance(amenity, Amenity):
             raise TypeError(
                 "Invalid amenity: must be an instance of the Amenity class.")
