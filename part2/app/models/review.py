@@ -12,7 +12,7 @@ class Review(BaseModel):
         user (User): The author of the review.
     """
 
-    def __init__(self, text, rating, place, user):
+    def __init__(self, text: str, rating: int, place, user):
         """
         Initializes a Review with validated input.
 
