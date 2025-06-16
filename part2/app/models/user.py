@@ -1,7 +1,5 @@
 from .base_model import BaseModel
 import re
-from .place import Place
-from .review import Review
 
 
 class User(BaseModel):
@@ -65,6 +63,7 @@ class User(BaseModel):
         Raises:
             TypeError: If the argument is not a Place instance.
         """
+        from .place import Place
         if not isinstance(place, Place):
             raise TypeError("add_place() expected a Place instance.")
         self.places.append(place)
@@ -79,6 +78,7 @@ class User(BaseModel):
         Raises:
             TypeError: If the argument is not a Review instance.
         """
+        from .review import Review
         if not isinstance(review, Review):
             raise TypeError("add_review() expected a Review instance.")
         self.reviews.append(review)
