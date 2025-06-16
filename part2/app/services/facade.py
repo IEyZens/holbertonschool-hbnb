@@ -19,6 +19,9 @@ class HBnBFacade:
         self.amenity_repo = InMemoryRepository()
         self.place_repo = InMemoryRepository()
 
+    def get_by_attribute(self, value, attribute, model_class):
+        return self.storage.get_by_attribute(model_class, attribute, value)
+
     def create_user(self, user_data):
         """
         Creates and stores a new User instance.
