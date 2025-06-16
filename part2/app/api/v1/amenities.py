@@ -8,6 +8,7 @@ amenity_model = api.model('Amenity', {
     'name': fields.String(required=True, description='Name of the amenity')
 })
 
+
 @api.route('/')
 class AmenityList(Resource):
     @api.expect(amenity_model)
@@ -17,19 +18,14 @@ class AmenityList(Resource):
         """Register a new amenity"""
         amenity_data = api.payload
 
-        if 'name' not in amenity_data:
-            return {'error': 'Missing name field'}, 400
-
-        new_amenity = facade.get_by_attribute(amenity_data['name'], "name")
-
-        if new_amenity:
-            return {'error': 'Amenity with name already exists'}, 400
-
-        new_amenity = facade.create_amenity(amenity_data)
-        return {
-            'id': new_amenity.id,
-            'name': new_amenity.name
-        }, 201
+        try:
+            new_amenity = facade.create_amenity(amenity_data)
+            return {
+                'id': new_amenity.id,
+                'name': new_amenity.name
+            }, 201
+        except ValueError as e:
+            return {'error': str(e)}, 400
 
     @api.response(200, 'List of amenities retrieved successfully')
     def get(self):
@@ -39,6 +35,7 @@ class AmenityList(Resource):
             return existing_amenities
         else:
             return ('', 204)
+
 
 @api.route('/<amenity_id>')
 class AmenityResource(Resource):
@@ -51,7 +48,7 @@ class AmenityResource(Resource):
             return {'error': 'Amenity not found'}, 404
 
         return {
-            'id':amenity.id,
+            'id': amenity.id,
             'name': amenity.name
         }, 200
 
@@ -68,6 +65,6 @@ class AmenityResource(Resource):
         except KeyError:
             return {'error': 'Amenity not found'}, 404
         return {
-            'id':amenity_data.id,
+            'id': amenity_data.id,
             'name': amenity_data.name
         }, 200
