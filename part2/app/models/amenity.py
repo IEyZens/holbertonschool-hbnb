@@ -18,6 +18,9 @@ class Amenity(BaseModel):
         """
         super().__init__()
 
+        if not isinstance(name, str):
+            raise TypeError("String error: Your input is not a string.")
+
         if not name or len(name) > 50:
             raise ValueError(
                 "Invalid Amenity: 'name' is required and must be a string with a maximum of 50 characters.")
