@@ -1,11 +1,22 @@
 from flask import Flask
-from app.api import api_bp  # ← importe le blueprint complet avec tous les namespaces
+from flask_restx import Api
+
+from app.api.v1.places import api as places_ns
+from app.api.v1.amenities import api as amenities_ns
+from app.api.v1.users import api as users_ns
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object('config.Config')  # si tu as un fichier de conf
+    app.config.from_object('config.Config')
 
-    # ✅ Enregistrement unique du Blueprint complet
-    app.register_blueprint(api_bp)
+    api = Api(app,
+              version='1.0',
+              title='HBnB API',
+              description='API for HBnB project',
+              doc='/')  # Swagger à la racine
+
+    api.add_namespace(places_ns, path="/api/v1/places")
+    api.add_namespace(amenities_ns, path="/api/v1/amenities")
+    api.add_namespace(users_ns, path="/api/v1/users")
 
     return app
