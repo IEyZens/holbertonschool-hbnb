@@ -153,23 +153,60 @@ class HBnBFacade:
             raise ValueError("Error ID: The requested ID does not exist.")
 
     def create_place(self, place_data):
+        """
+        Create a new Place instance and store it in the repository.
+
+        Args:
+            place_data (dict): A dictionary containing the attributes of the new place.
+
+        Returns:
+            Place: The newly created Place object.
+        """
         place = Place(**place_data)
         self.place_repo.add(place)
         return place
 
     def get_place(self, place_id):
+        """
+        Retrieve a Place by its unique identifier.
+
+        Args:
+            place_id (str): The unique identifier of the place.
+
+        Returns:
+            Place: The corresponding Place object.
+
+        Raises:
+            ValueError: If no place with the given ID exists.
+        """
         try:
             return self.place_repo.get(place_id)
-        except:
+        except KeyError:
             raise ValueError("Error ID: The requested ID does not exist.")
 
     def get_all_places(self):
-        try:
-            return self.place_repo.get_all()
-        except Exception:
-            return []
+        """
+        Retrieve all Place instances from the repository.
+
+        Returns:
+            list[Place]: A list of all stored Place objects.
+        """
+        return self.place_repo.get_all()
 
     def update_place(self, place_id, place_data):
+        """
+        Update an existing Place with new data.
+
+        Args:
+            place_id (str): The unique identifier of the place to update.
+            place_data (dict): A dictionary containing the updated attributes.
+
+        Returns:
+            Place: The updated Place object.
+
+        Raises:
+            ValueError: If no place with the given ID exists.
+        """
         try:
             return self.place_repo.update(place_id, place_data)
         except KeyError:
