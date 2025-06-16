@@ -10,7 +10,8 @@ api_bp = Blueprint('api', __name__, url_prefix='/api/v1')
 api = Api(api_bp,
           title='HBnB API',
           version='1.0',
-          description='API for HBnB project'
+          description='API for HBnB project',
+          doc='/docs'
 )
 
 api.add_namespace(places_ns)
