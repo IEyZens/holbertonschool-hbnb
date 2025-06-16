@@ -1,6 +1,4 @@
 from .base_model import BaseModel
-from .user import User
-from .place import Place
 
 
 class Review(BaseModel):
@@ -32,10 +30,12 @@ class Review(BaseModel):
             raise ValueError(
                 "Invalid rating: The rating must be between 1 and 5.")
 
+        from .user import User
         if not isinstance(user, User):
             raise TypeError(
                 "Invalid user: must be an instance of the User class.")
 
+        from .place import Place
         if not isinstance(place, Place):
             raise TypeError(
                 "Invalid place: must be an instance of the Place class.")
