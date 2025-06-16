@@ -36,30 +36,41 @@ class PlaceList(Resource):
         """Register a new place"""
         place_data = api.payload
 
-        existing_place = facade.get_by_attribute(place_data['title'], "title")
-        if existing_place:
-            return {'error': 'Place with this title already exists'}, 400
+        try:
+            new_place = facade.create_place(place_data)
 
-        new_place = facade.create_place(place_data)
-        return {
-            'id': new_place.id,
-            'title': new_place.title,
-            'description': new_place.description,
-            'price': new_place.price,
-            'latitude': new_place.latitude,
-            'longitude': new_place.longitude,
-            'owner': new_place.owner,
-            'max_person': new_place.max_person
-        }, 201
+            return {
+                'id': new_place.id,
+                'title': new_place.title,
+                'description': new_place.description,
+                'price': new_place.price,
+                'latitude': new_place.latitude,
+                'longitude': new_place.longitude,
+                'owner_id': new_place.owner.id,
+                'max_person': new_place.max_person,
+                'amenities': [amenity.name for amenity in new_place.amenities]
+            }, 201
+        except ValueError as e:
+            return {'error': str(e)}, 400
 
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
         """Retrieve a list of all places"""
-        existing_places = facade.get_all_places()
-        if existing_places:
-            return existing_places
-        else:
-            return '', 204
+        places = facade.get_all_places()
+
+        return [
+            {
+                'id': p.id,
+                'title': p.title,
+                'description': p.description,
+                'price': p.price,
+                'latitude': p.latitude,
+                'longitude': p.longitude,
+                'owner_id': p.owner.id,
+                'max_person': p.max_person,
+            }
+            for p in places
+        ], 200
 
 @api.route('/<place_id>')
 class PlaceResource(Resource):
@@ -67,20 +78,32 @@ class PlaceResource(Resource):
     @api.response(404, 'Place not found')
     def get(self, place_id):
         """Get place details by ID"""
-        place = facade.get_place(place_id)
-        if not place:
+        try:
+            place = facade.get_place(place_id)
+            return {
+                'id': place.id,
+                'title': place.title,
+                'description': place.description,
+                'price': place.price,
+                'latitude': place.latitude,
+                'longitude': place.longitude,
+                'owner': {
+                    'id': place.owner.id,
+                    'first_name': place.owner.first_name,
+                    'last_name': place.owner.last_name,
+                    'email': place.owner.email
+                },
+                'max_person': place.max_person,
+                'amenities': [
+                    {
+                        'id': amenity.id,
+                        'name': amenity.name
+                    }
+                    for amenity in place.amenities
+                ]
+            }, 200
+        except ValueError:
             return {'error': 'Place not found'}, 404
-
-        return {
-            'id': place.id,
-            'title': place.title,
-            'description': place.description,
-            'price': place.price,
-            'latitude': place.latitude,
-            'longitude': place.longitude,
-            'owner': place.owner,
-            'max_person': place.max_person
-        }, 200
 
     @api.expect(place_model)
     @api.response(200, 'Place updated successfully')
@@ -92,15 +115,21 @@ class PlaceResource(Resource):
 
         try:
             place_data = facade.update_place(place_id, place_api)
-        except KeyError:
+
+            if not place_data:
+                return {'error': 'Place not found'}, 404
+            return {
+                'id': place_data.id,
+                'title': place_data.title,
+                'description': place_data.description,
+                'price': place_data.price,
+                'latitude': place_data.latitude,
+                'longitude': place_data.longitude,
+                'owner_id': place_data.owner.id,
+                'max_person': place_data.max_person,
+                'amenities': [amenity.name for amenity in place_data.amenities]
+            }, 200
+        except ValueError as e:
+            return {'error': str(e)}, 400
+        except Exception:
             return {'error': 'Place not found'}, 404
-        return {
-            'id': place_data.id,
-            'title': place_data.title,
-            'description': place_data.description,
-            'price': place_data.price,
-            'latitude': place_data.latitude,
-            'longitude': place_data.longitude,
-            'owner': place_data.owner,
-            'max_person': place_data.max_person
-        }, 200
