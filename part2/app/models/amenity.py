@@ -9,7 +9,7 @@ class Amenity(BaseModel):
         name (str): The name of the amenity, max 50 characters.
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         """
         Initializes an Amenity with a validated name.
 
