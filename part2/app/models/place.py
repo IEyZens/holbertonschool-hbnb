@@ -17,7 +17,7 @@ class Place(BaseModel):
         amenities (list): List of associated Amenity instances.
     """
 
-    def __init__(self, title, description, price, latitude, longitude, owner, max_person):
+    def __init__(self, title: str, description: str, price: float, latitude: float, longitude: float, owner, max_person: int):
         """
         Initializes a Place with validated attributes.
 
