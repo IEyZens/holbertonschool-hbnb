@@ -154,7 +154,39 @@ class HBnBFacade:
 
     def create_place(self, place_data):
 
-        place = Place(**place_data)
+        if place_data['price'] < 0:
+            raise ValueError("")
+        if not (-90 <= place_data['latitude'] <= 90):
+            raise ValueError("")
+        if not (-180 <= place_data['longitude'] <= 180):
+            raise ValueError("")
+
+        owner = self.user_repo.get(place_data['owner_id'])
+        if not owner:
+            raise ValueError("Owner not found.")
+
+        place = Place(
+            title=place_data['title'],
+            description=place_data['description'],
+            price=place_data['price'],
+            latitude=place_data['latitude'],
+            longitude=place_data['longitude'],
+            owner=owner
+        )
+        place.amenities = []
+        if not hasattr:
+            place, 'amenities'
+        else:
+            place.amenities
+
+        if 'amenities' in place_data:
+            amenities = []
+            for amenity_id in place_data["amenities"]:
+                new_amenity = self.amenity_repo.get(amenity_id)
+                if new_amenity:
+                    amenities.append(new_amenity)
+            place.amenities = amenities
+
         self.place_repo.add(place)
         return place
 
