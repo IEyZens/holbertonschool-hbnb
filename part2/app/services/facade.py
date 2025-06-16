@@ -1,6 +1,7 @@
 from app.persistence.repository import InMemoryRepository
 from app.models.user import User
 from app.models.amenity import Amenity
+from app.models.place import Place
 
 class HBnBFacade:
     """
@@ -16,6 +17,7 @@ class HBnBFacade:
         """
         self.user_repo = InMemoryRepository()
         self.amenity_repo = InMemoryRepository()
+        self.place_repo = InMemoryRepository()
 
     def create_user(self, user_data):
         """
@@ -147,5 +149,28 @@ class HBnBFacade:
         """
         try:
             return self.amenity_repo.update(amenity_id, amenity_data)
+        except KeyError:
+            raise ValueError("Error ID: The requested ID does not exist.")
+
+    def create_place(self, place_data):
+        place = Place(**place_data)
+        self.place_repo.add(place)
+        return place
+
+    def get_place(self, place_id):
+        try:
+            return self.place_repo.get(place_id)
+        except:
+            raise ValueError("Error ID: The requested ID does not exist.")
+
+    def get_all_places(self):
+        try:
+            return self.place_repo.get_all()
+        except Exception:
+            return []
+
+    def update_place(self, place_id, place_data):
+        try:
+            return self.place_repo.update(place_id, place_data)
         except KeyError:
             raise ValueError("Error ID: The requested ID does not exist.")
