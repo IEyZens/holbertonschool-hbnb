@@ -68,9 +68,11 @@ class AmenityResource(Resource):
 
             if not amenity_data:
                 return {'error': 'Amenity not found'}, 404
+
             return {
                 'id': amenity_data.id,
                 'name': amenity_data.name
             }, 200
+
         except ValueError as e:
             return {'error': str(e)}, 400
