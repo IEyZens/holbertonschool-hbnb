@@ -19,9 +19,6 @@ class HBnBFacade:
         self.amenity_repo = InMemoryRepository()
         self.place_repo = InMemoryRepository()
 
-    def get_by_attribute(self, value, attribute, model_class):
-        return self.storage.get_by_attribute(model_class, attribute, value)
-
     def create_user(self, user_data):
         """
         Creates and stores a new User instance.
@@ -156,15 +153,7 @@ class HBnBFacade:
             raise ValueError("Error ID: The requested ID does not exist.")
 
     def create_place(self, place_data):
-        """
-        Create a new Place instance and store it in the repository.
 
-        Args:
-            place_data (dict): A dictionary containing the attributes of the new place.
-
-        Returns:
-            Place: The newly created Place object.
-        """
         place = Place(**place_data)
         self.place_repo.add(place)
         return place
@@ -189,26 +178,26 @@ class HBnBFacade:
 
     def get_all_places(self):
         """
-        Retrieve all Place instances from the repository.
+        Retrieve all Place instances.
 
         Returns:
-            list[Place]: A list of all stored Place objects.
+            list: A list of all Place objects from the repository.
         """
         return self.place_repo.get_all()
 
     def update_place(self, place_id, place_data):
         """
-        Update an existing Place with new data.
+        Update an existing Place instance with new data.
 
         Args:
-            place_id (str): The unique identifier of the place to update.
+            place_id (str): The unique identifier of the Place to update.
             place_data (dict): A dictionary containing the updated attributes.
 
         Returns:
             Place: The updated Place object.
 
         Raises:
-            ValueError: If no place with the given ID exists.
+            ValueError: If the place_id does not correspond to an existing Place.
         """
         try:
             return self.place_repo.update(place_id, place_data)
