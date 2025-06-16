@@ -17,7 +17,7 @@ class User(BaseModel):
 
     existing_emails = set()
 
-    def __init__(self, first_name, last_name, email, is_admin=False):
+    def __init__(self, first_name: str, last_name: str, email: str, is_admin: bool = False):
         """
         Initializes a User with validated attributes.
 
