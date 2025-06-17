@@ -174,7 +174,8 @@ class HBnBFacade:
             price=place_data['price'],
             latitude=place_data['latitude'],
             longitude=place_data['longitude'],
-            owner=owner
+            owner=owner,
+            max_person=place_data['max_person']
         )
         place.amenities = []
         if not hasattr:
