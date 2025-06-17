@@ -2,6 +2,8 @@ from app.persistence.repository import InMemoryRepository
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
+from app.models.review import Review
+
 
 class HBnBFacade:
     """
@@ -18,6 +20,7 @@ class HBnBFacade:
         self.user_repo = InMemoryRepository()
         self.amenity_repo = InMemoryRepository()
         self.place_repo = InMemoryRepository()
+        self.review_repo = InMemoryRepository()
 
     def create_user(self, user_data):
         """
@@ -233,5 +236,41 @@ class HBnBFacade:
         """
         try:
             return self.place_repo.update(place_id, place_data)
+        except KeyError:
+            raise ValueError("Error ID: The requested ID does not exist.")
+
+    def create_review(self, review_data):
+
+        if not self.user_repo.get(review_data['user_id']):
+            raise ValueError("User does not exist.")
+
+        if not self.place_repo.get(review_data['place_id']):
+            raise ValueError("Place does not exist.")
+
+        review = Review(**review_data)
+        self.review_repo.add(review)
+        return review
+
+    def get_review(self, review_id):
+        try:
+            return self.review_repo.get(review_id)
+        except KeyError:
+            raise ValueError("Error ID: The requested ID does not exist.")
+
+    def get_all_reviews(self):
+        return self.review_repo.get_all()
+
+    def get_reviews_by_place(self, place_id):
+        return self.review_repo.get_by_attribute(place_id, 'place')
+
+    def update_review(self, review_id, review_data):
+        try:
+            return self.review_repo.update(review_id, review_data)
+        except KeyError:
+            raise ValueError("Error ID: The requested ID does not exist.")
+
+    def delete_review(self, review_id):
+        try:
+            return self.review_repo.delete(review_id)
         except KeyError:
             raise ValueError("Error ID: The requested ID does not exist.")
