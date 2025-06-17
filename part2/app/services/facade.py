@@ -266,19 +266,27 @@ class HBnBFacade:
                     amenities.append(new_amenity)
             place.amenities = amenities
 
-        self.place_repo.update(place)
+        self.place_repo.update(place_id, place)
 
         return place
 
     def create_review(self, review_data):
 
-        if not self.user_repo.get(review_data['user_id']):
+        user = self.user_repo.get(review_data['user_id'])
+        if not user:
             raise ValueError("User does not exist.")
 
-        if not self.place_repo.get(review_data['place_id']):
+        place = self.place_repo.get(review_data['place_id'])
+        if not place:
             raise ValueError("Place does not exist.")
 
-        review = Review(**review_data)
+        review = Review(
+            text=review_data['text'],
+            rating=review_data['rating'],
+            user=user,
+            place=place
+        )
+
         self.review_repo.add(review)
         return review
 
@@ -292,7 +300,8 @@ class HBnBFacade:
         return self.review_repo.get_all()
 
     def get_reviews_by_place(self, place_id):
-        return self.review_repo.get_by_attribute(place_id, 'place')
+        reviews = self.review_repo.get_by_attribute('place', place_id)
+        return reviews if reviews else []
 
     def update_review(self, review_id, review_data):
         try:
@@ -301,7 +310,7 @@ class HBnBFacade:
             raise ValueError("Error ID: The requested ID does not exist.")
 
     def delete_review(self, review_id):
-        try:
-            return self.review_repo.delete(review_id)
-        except KeyError:
-            raise ValueError("Error ID: The requested ID does not exist.")
+        deleted = self.review_repo.delete(review_id)
+        if not deleted:
+            raise ValueError("Review not found")
+        return True
