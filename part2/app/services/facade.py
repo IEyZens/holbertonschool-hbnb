@@ -314,3 +314,5 @@ class HBnBFacade:
         if not deleted:
             raise ValueError("Review not found")
         return True
+
+facade = HBnBFacade()
