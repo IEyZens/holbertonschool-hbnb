@@ -8,6 +8,9 @@ class TestPlaceModel(unittest.TestCase):
     def setUp(self):
         self.user = User("Jane", "Doe", "jane.doe@example.com")
 
+    def tearDown(self):
+        User.existing_emails.clear()
+
     def test_create_valid_place(self):
         place = Place("Nice House", "Great view", 100.0, 45.0, 5.0, self.user, 4)
         self.assertEqual(place.title, "Nice House")
