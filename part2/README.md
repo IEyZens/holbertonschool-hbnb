@@ -18,7 +18,6 @@
 - [🔌 API Endpoints](#-api-endpoints)
 - [✅ Validation](#-validation)
 - [🧪 Testing](#-testing)
-- [🔮 Future Improvements](#-future-improvements)
 - [👥 Authors](#-authors)
 - [📄 License](#-license)
 
