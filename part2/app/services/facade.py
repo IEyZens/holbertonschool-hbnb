@@ -294,6 +294,8 @@ class HBnBFacade:
         )
 
         self.review_repo.add(review)
+        place.add_review(review)
+
         return review
 
     def get_review(self, review_id):
@@ -319,16 +321,26 @@ class HBnBFacade:
 
     def get_reviews_by_place(self, place_id):
         """
-        Retrieve all reviews for a given place.
+        Retrieve all reviews associated with a specific place.
+
+        This method searches the entire review repository and filters out only
+        those reviews that are linked to the given place ID. This approach ensures
+        consistency even if the in-memory relationship between Place and its reviews
+        is not directly maintained (e.g., after deserialization or repo refresh).
 
         Args:
-            place_id (str): Place ID.
+            place_id (str): Unique identifier of the place whose reviews are requested.
 
         Returns:
-            list[Review]: Reviews associated with that place.
+            list[Review]: A list of Review instances that are linked to the specified place.
+
+        Raises:
+            KeyError: If no place is found with the given ID.
         """
-        reviews = self.review_repo.get_by_attribute('place', place_id)
-        return reviews if reviews else []
+        place = self.place_repo.get(place_id)
+        if not place:
+            raise KeyError("Place not found")
+        return place.reviews
 
     def update_review(self, review_id, review_data):
         """
