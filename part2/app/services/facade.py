@@ -72,6 +72,18 @@ class HBnBFacade:
         """
         return self.user_repo.get_by_attribute('email', email)
 
+    def get_all_users(self):
+        """
+        Get all stored users.
+
+        Returns:
+            list[User]: All users.
+        """
+        try:
+            return self.user_repo.get_all()
+        except Exception:
+            return []
+
     def update_user(self, user_id, data):
         """
         Update user attributes.
