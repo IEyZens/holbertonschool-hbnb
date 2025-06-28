@@ -115,3 +115,37 @@ class UserResource(Resource):
             'last_name': user.last_name,
             'email': user.email
         }, 200
+
+    @api.expect(user_model)
+    @api.response(200, 'User updated successfully')
+    @api.response(404, 'User not found')
+    @api.response(400, 'Invalid input data')
+    def put(self, user_id):
+        """
+        Update an existing user's information.
+
+        Args:
+            user_id (str): The ID of the user to update.
+
+        Returns:
+            dict: Updated user data if successful.
+            tuple: Error message and HTTP status code if failed.
+        """
+        # Récupération des données envoyées dans la requête
+        user_api = api.payload
+
+        try:
+            # Mise à jour de l'utilisateur via la façade
+            user_data = facade.update_user(user_id, user_api)
+
+            # Retourne les informations de l'utilisateur mis à jour
+            return {
+                'id': user_data.id,
+                'first_name': user_data.first_name,
+                'last_name': user_data.last_name,
+                'email': user_data.email
+            }, 200
+
+        except ValueError as e:
+            # Gestion d'une erreur si l'utilisateur n'existe pas ou si l'entrée est invalide
+            return {'error': str(e)}, 400
