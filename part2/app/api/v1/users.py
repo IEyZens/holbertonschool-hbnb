@@ -59,6 +59,27 @@ class UserList(Resource):
             'email': new_user.email
         }, 201
 
+    @api.response(200, 'List of users retrieved successfully')
+    def get(self):
+        """
+        Retrieve all users.
+
+        Returns:
+            tuple: A list of user dictionaries and an HTTP 200 status code.
+        """
+        # Récupère tous les utilisateurs via la façade
+        users = facade.get_all_users()
+        # Construit et retourne la liste des utilisateurs avec leurs champs publics
+        return [
+            {
+                'id': user.id,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email
+            }
+            for user in users
+        ], 200
+
 
 @api.route('/<user_id>')
 class UserResource(Resource):
