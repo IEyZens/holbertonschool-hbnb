@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app.services import facade
 
 api = Namespace('auth', description='Authentication operations')
@@ -13,6 +13,8 @@ login_model = api.model('Login', {
 @api.route('/login')
 class Login(Resource):
     @api.expect(login_model)
+    @api.response(200, 'Login successful, token returned')
+    @api.response(401, 'Invalid email or password')
     def post(self):
         """Authenticate user and return a JWT token"""
         credentials = api.payload  # Get the email and password from the request payload
@@ -25,7 +27,17 @@ class Login(Resource):
             return {'error': 'Invalid credentials'}, 401
 
         # Step 3: Create a JWT token with the user's id and is_admin flag
-        access_token = create_access_token(identity={'id': str(user.id), 'is_admin': user.is_admin})
+        access_token = create_access_token(identity=str(user.id))
 
         # Step 4: Return the JWT token to the client
         return {'access_token': access_token}, 200
+
+@api.route('/protected')
+class ProtectedResource(Resource):
+    @jwt_required()
+    @api.doc(security='Bearer')
+    @api.response(200, 'Access granted')
+    @api.response(401, 'Missing or invalid JWT token')
+    def get(self):
+        current_user_id = get_jwt_identity()
+        return {'message': f'Hello, user {current_user_id}'}, 200
