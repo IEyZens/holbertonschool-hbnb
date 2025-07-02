@@ -3,6 +3,7 @@ from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
 from app.models.review import Review
+import re
 
 
 class HBnBFacade:
@@ -99,6 +100,12 @@ class HBnBFacade:
         Returns:
             User: The updated object.
         """
+        if 'email' in data:
+            email = data['email']
+            if not re.fullmatch(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,7}", email):
+                raise ValueError(
+                    "Invalid email: must be a valid email address.")
+
         try:
             return self.user_repo.update(user_id, data)
         except KeyError:
@@ -161,7 +168,7 @@ class HBnBFacade:
         except KeyError:
             raise ValueError("Error ID: The requested ID does not exist.")
 
-    def create_place(self, place_data):
+    def create_place(self, place_data, user):
         """
         Create a new Place with data validation and relation enforcement.
 
@@ -285,7 +292,7 @@ class HBnBFacade:
         self.place_repo.update(place_id, place)
         return place
 
-    def create_review(self, review_data):
+    def create_review(self, review_data, user):
         """
         Create a new Review and bind it to a user and place.
 
@@ -370,6 +377,10 @@ class HBnBFacade:
         Returns:
             Review: Updated object.
         """
+
+        if 'rating' in review_data and not (1 <= review_data['rating'] <= 5):
+            raise ValueError("Rating must be between 1 and 5.")
+
         try:
             return self.review_repo.update(review_id, review_data)
         except KeyError:
