@@ -1,4 +1,5 @@
 from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services import facade
 
 # Création du namespace RESTx pour les opérations utilisateur
@@ -121,6 +122,8 @@ class UserResource(Resource):
     @api.response(200, 'User updated successfully')
     @api.response(404, 'User not found')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
     def put(self, user_id):
         """
         Update an existing user's information.
@@ -134,6 +137,14 @@ class UserResource(Resource):
         """
         # Récupération des données envoyées dans la requête
         user_api = api.payload
+        current_user = get_jwt_identity()
+        user = facade.get_user(user_id)
+
+        if not user:
+            return {'error': 'User not found'}, 404
+
+        if user.id != current_user["id"] and not current_user.get("is_admin", False):
+            return {'error': 'Unauthorized action'}, 403
 
         try:
             # Mise à jour de l'utilisateur via la façade
