@@ -1,4 +1,5 @@
 from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services import facade
 
 # Création d’un namespace pour les opérations relatives aux lieux (places)
@@ -57,6 +58,8 @@ class PlaceList(Resource):
     @api.response(201, 'Place successfully created')
     # Réponse 400 en cas de données invalides
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
     def post(self):
         """
         Create a new place entity.
@@ -71,10 +74,11 @@ class PlaceList(Resource):
         """
         # Extraction des données envoyées dans la requête
         place_data = api.payload
+        current_user = get_jwt_identity()
 
         try:
             # Appel à la façade pour créer un nouveau lieu
-            new_place = facade.create_place(place_data)
+            new_place = facade.create_place(place_data, current_user)
 
             # Retourne les données essentielles du lieu nouvellement créé
             return {
@@ -188,8 +192,10 @@ class PlaceResource(Resource):
     @api.response(200, 'Place updated successfully')
     # Réponse 404 si le lieu n’existe pas
     @api.response(404, 'Place not found')
+    @api.response(403, 'Unauthorized action')
     # Réponse 400 si les données sont invalides
     @api.response(400, 'Invalid input data')
+    @jwt_required()
     def put(self, place_id):
         """
         Update an existing place entity.
@@ -205,8 +211,17 @@ class PlaceResource(Resource):
         """
         # Données mises à jour provenant du client
         place_api = api.payload
+        current_user = get_jwt_identity()
+        place = facade.get_place(place_id)
+
+        if not place:
+            return {'error': 'Place not found'}, 404
+
+        if place.owner.id != current_user["id"]:
+            return {'error': 'Unauthorized action'}, 403
 
         try:
+
             # Appel à la façade pour mettre à jour un lieu
             place_data = facade.update_place(place_id, place_api)
 
