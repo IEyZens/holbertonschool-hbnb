@@ -1,4 +1,5 @@
 from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import request
 from app.services import facade
 
@@ -29,6 +30,7 @@ class ReviewList(Resource):
     @api.response(201, 'Review successfully created')
     # Réponse 400 si les données envoyées sont invalides
     @api.response(400, 'Invalid input data')
+    @jwt_required()
     def post(self):
         """
         Create a new review entry.
@@ -39,11 +41,14 @@ class ReviewList(Resource):
         Returns:
             dict: Created review metadata or HTTP 400 with error message.
         """
+        current_user = get_jwt_identity()
+
         try:
             # Récupération des données JSON issues de la requête
             review_data = request.json
+
             # Création d'un nouvel avis via la façade
-            new_review = facade.create_review(review_data)
+            new_review = facade.create_review(review_data, current_user)
 
             # Retourne les détails de l'avis créé
             return {
@@ -132,6 +137,8 @@ class ReviewResource(Resource):
     @api.response(404, 'Review not found')
     # Réponse 400 si les données envoyées sont invalides
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
     def put(self, review_id):
         """
         Update an existing review entry.
@@ -147,10 +154,21 @@ class ReviewResource(Resource):
         """
         # Récupération des nouvelles données pour la mise à jour
         review_api = api.payload
+        current_user = get_jwt_identity()
+        review = facade.get_review(review_id)
+
+        if not review:
+            return {'error': 'Review not found'}, 404
+
+        if review.user.id != current_user["id"]:
+            return {'error': 'Unauthorized action'}, 403
 
         try:
             # Mise à jour de l'avis via la façade
             review_data = facade.update_review(review_id, review_api)
+
+            if not review_data:
+                return {'error': 'Review not found'}, 404
 
             # Retourne les nouvelles données de l'avis
             return {
@@ -160,14 +178,19 @@ class ReviewResource(Resource):
                 'place_id': review_data.place.id,
                 'user_id': review_data.user.id
             }, 200
-        except KeyError as e:
+        except ValueError as e:
             # Retourne une erreur si l'avis est introuvable
-            return {'error': str(e)}, 404
+            return {'error': str(e)}, 400
+        except Exception as e:
+            # Gestion générique d’exception serveur : erreur 500
+            return {'error': 'Internal server error', 'details': str(e)}, 500
 
     # Réponse 200 si la suppression est réussie
     @api.response(200, 'Review deleted successfully')
     # Réponse 404 si l'avis n'est pas trouvé
     @api.response(404, 'Review not found')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
     def delete(self, review_id):
         """
         Delete a review entity by ID.
@@ -178,6 +201,15 @@ class ReviewResource(Resource):
         Returns:
             dict: Success confirmation or HTTP 404 error.
         """
+        current_user = get_jwt_identity()
+        review = facade.get_review(review_id)
+
+        if not review:
+            return {'error': 'Review not found'}, 404
+
+        if review.user.id != current_user["id"]:
+            return {'error': 'Unauthorized action'}, 403
+
         try:
             # Suppression de l'avis via la façade
             review_data = facade.delete_review(review_id)
@@ -188,9 +220,10 @@ class ReviewResource(Resource):
             else:
                 # Confirmation de la suppression
                 return {'message': 'Review successfully deleted'}, 200
-        except KeyError as e:
-            # Gestion d'une erreur de clé manquante dans la couche métier
-            return {'error': str(e)}, 404
+        except ValueError as e:
+            return {'error': str(e)}, 400
+        except Exception as e:
+            return {'error': 'Internal server error', 'details': str(e)}, 500
 
 
 @api.route('/places/<place_id>/reviews')
