@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.services import facade
 
 # Création d’un namespace pour les opérations relatives aux lieux (places)
@@ -30,12 +30,24 @@ review_model = api.model('PlaceReview', {
 # Définition du modèle principal représentant un lieu
 place_model = api.model('Place', {
     'title': fields.String(required=True, description='Title of the place'),
-    'description': fields.String(description='Description of the place'),
+    'description': fields.String(required=True, description='Description of the place'),
     'price': fields.Float(required=True, description='Price per night'),
     'latitude': fields.Float(required=True, description='Latitude of the place'),
     'longitude': fields.Float(required=True, description='Longitude of the place'),
     'owner_id': fields.String(required=True, description='ID of the owner'),
     'max_person': fields.Integer(required=True, description='Maximum number of persons allowed'),
+    'owner': fields.Nested(user_model, description='Owner of the place'),
+    'amenities': fields.List(fields.Nested(amenity_model), description='List of amenities'),
+    'reviews': fields.List(fields.Nested(review_model), description='List of reviews')
+})
+
+place_update_model = api.model('Place', {
+    'title': fields.String(required=False, description='Title of the place'),
+    'description': fields.String(required=True, description='Description of the place'),
+    'price': fields.Float(required=False, description='Price per night'),
+    'latitude': fields.Float(required=False, description='Latitude of the place'),
+    'longitude': fields.Float(required=False, description='Longitude of the place'),
+    'max_person': fields.Integer(required=False, description='Maximum number of persons allowed'),
     'owner': fields.Nested(user_model, description='Owner of the place'),
     'amenities': fields.List(fields.Nested(amenity_model), description='List of amenities'),
     'reviews': fields.List(fields.Nested(review_model), description='List of reviews')
@@ -187,7 +199,7 @@ class PlaceResource(Resource):
             return {'error': 'Place not found'}, 404
 
     # Indique que la requête attend des données conformes au modèle place_model
-    @api.expect(place_model)
+    @api.expect(place_update_model)
     # Réponse 200 si mise à jour réussie
     @api.response(200, 'Place updated successfully')
     # Réponse 404 si le lieu n’existe pas
