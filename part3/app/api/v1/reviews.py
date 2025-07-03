@@ -14,6 +14,11 @@ review_model = api.model('Review', {
     'place_id': fields.String(required=True, description='ID of the place')
 })
 
+review_update_model = api.model('Review', {
+    'text': fields.String(required=False, description='Text of the review'),
+    'rating': fields.Integer(required=False, description='Rating of the place (1-5)'),
+})
+
 
 @api.route('/')
 class ReviewList(Resource):
@@ -130,7 +135,7 @@ class ReviewResource(Resource):
             return {'error': str(e)}, 404
 
     # Indique que la requête PUT attend un corps conforme à review_model
-    @api.expect(review_model)
+    @api.expect(review_update_model)
     # Réponse 200 si la mise à jour est effectuée
     @api.response(200, 'Review updated successfully')
     # Réponse 404 si l'avis n'existe pas
