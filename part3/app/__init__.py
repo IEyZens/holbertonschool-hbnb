@@ -10,9 +10,13 @@ from flask_restx import Api
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from app.api.v1.users import api as users_ns
+from app.api.v1.admin_users import api as admin_users_ns
 from app.api.v1.places import api as places_ns
+from app.api.v1.admin_places import api as admin_places_ns
 from app.api.v1.amenities import api as amenities_ns
+from app.api.v1.admin_amenities import api as admin_amenities_ns
 from app.api.v1.reviews import api as reviews_ns
+from app.api.v1.admin_reviews import api as admin_reviews_ns
 from app.api.v1.auth import api as auth_ns
 
 bcrypt = Bcrypt()
@@ -56,12 +60,16 @@ def create_app(config_class="config.DevelopmentConfig"):
 
     # Enregistrement du namespace utilisateurs (v1)
     api.add_namespace(users_ns, path='/api/v1/users')
+    api.add_namespace(admin_users_ns, path='/api/v1/admin_users')
     # Enregistrement du namespace lieux (v1)
     api.add_namespace(places_ns, path="/api/v1/places")
+    api.add_namespace(admin_places_ns, path="/api/v1/admin_places")
     # Enregistrement du namespace commodités (v1)
     api.add_namespace(amenities_ns, path="/api/v1/amenities")
+    api.add_namespace(admin_amenities_ns, path="/api/v1/admin_amenities")
     # Enregistrement du namespace avis (v1)
     api.add_namespace(reviews_ns, path="/api/v1/reviews")
+    api.add_namespace(admin_reviews_ns, path="/api/v1/admin_reviews")
     api.add_namespace(auth_ns, path="/api/v1/auth")
 
     # Retourne l’instance configurée de l'application
