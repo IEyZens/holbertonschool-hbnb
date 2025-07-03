@@ -100,11 +100,16 @@ class HBnBFacade:
         Returns:
             User: The updated object.
         """
+        user = self.user_repo.get(user_id)
+
         if 'email' in data:
             email = data['email']
             if not re.fullmatch(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,7}", email):
                 raise ValueError(
                     "Invalid email: must be a valid email address.")
+
+            if 'password' in data:
+                user.hash_password(data.pop('password'))
 
         try:
             return self.user_repo.update(user_id, data)
@@ -183,7 +188,7 @@ class HBnBFacade:
         Raises:
             ValueError: For missing fields or invalid constraints.
         """
-        required_fields = ['title', 'description', 'price',
+        required_fields = ['title', 'price',
                            'latitude', 'longitude', 'owner_id', 'max_person']
 
         for field in required_fields:
