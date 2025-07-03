@@ -88,7 +88,6 @@ class UserList(Resource):
                 'last_name': user.last_name,
                 'email': user.email,
                 'is_admin': user.is_admin,
-                'password': user.password
             }
             for user in users
         ], 200
