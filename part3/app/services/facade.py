@@ -168,6 +168,12 @@ class HBnBFacade:
         Returns:
             Amenity: Updated amenity object.
         """
+
+        if 'name' in amenity_data:
+            name = amenity_data['name']
+            if not name or len(name) > 50:
+                raise ValueError("Name must be between 1 and 50 characters.")
+
         try:
             return self.amenity_repo.update(amenity_id, amenity_data)
         except KeyError:
@@ -297,7 +303,7 @@ class HBnBFacade:
         self.place_repo.update(place_id, place)
         return place
 
-    def create_review(self, review_data, user):
+    def create_review(self, review_data, current_user):
         """
         Create a new Review and bind it to a user and place.
 
@@ -307,7 +313,8 @@ class HBnBFacade:
         Returns:
             Review: Created review object.
         """
-        user = self.user_repo.get(review_data['user_id'])
+        user_id = current_user['id']
+        user = self.user_repo.get(user_id)
         if not user:
             raise ValueError("User does not exist.")
 
