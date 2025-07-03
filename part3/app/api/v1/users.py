@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.services import facade
 
 # Création du namespace RESTx pour les opérations utilisateur
@@ -10,7 +10,15 @@ user_model = api.model('User', {
     'first_name': fields.String(required=True, description='First name of the user'),
     'last_name': fields.String(required=True, description='Last name of the user'),
     'email': fields.String(required=True, description='Email of the user'),
-    'password': fields.String(required=True, description='Password of the user')
+    'password': fields.String(required=True, description='Password of the user'),
+    'is_admin': fields.Boolean(description='Admin status')
+})
+
+user_update_model = api.model('User', {
+    'first_name': fields.String(required=False, description='First name of the user'),
+    'last_name': fields.String(required=False, description='Last name of the user'),
+    'email': fields.String(required=False, description='Email of the user'),
+    'password': fields.String(required=False, description='Password of the user')
 })
 
 
@@ -58,7 +66,8 @@ class UserList(Resource):
             'id': new_user.id,
             'first_name': new_user.first_name,
             'last_name': new_user.last_name,
-            'email': new_user.email
+            'email': new_user.email,
+            'is_admin': new_user.is_admin
         }, 201
 
     @api.response(200, 'List of users retrieved successfully')
@@ -77,7 +86,9 @@ class UserList(Resource):
                 'id': user.id,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
-                'email': user.email
+                'email': user.email,
+                'is_admin': user.is_admin,
+                'password': user.password
             }
             for user in users
         ], 200
@@ -115,10 +126,11 @@ class UserResource(Resource):
             'id': user.id,
             'first_name': user.first_name,
             'last_name': user.last_name,
-            'email': user.email
+            'email': user.email,
+            'is_admin': user.is_admin
         }, 200
 
-    @api.expect(user_model)
+    @api.expect(user_update_model)
     @api.response(200, 'User updated successfully')
     @api.response(404, 'User not found')
     @api.response(400, 'Invalid input data')
@@ -155,7 +167,8 @@ class UserResource(Resource):
                 'id': user_data.id,
                 'first_name': user_data.first_name,
                 'last_name': user_data.last_name,
-                'email': user_data.email
+                'email': user_data.email,
+                'is_admin': user_data.is_admin
             }, 200
 
         except ValueError as e:
