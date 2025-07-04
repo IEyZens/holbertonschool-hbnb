@@ -1,29 +1,17 @@
+from app import db
 import uuid
 from datetime import datetime
 
 
-class BaseModel:
-    """
-    Abstract base model providing shared attributes and methods.
+class BaseModel(db.Model):
 
-    All domain entities (e.g., User, Place, Amenity) inherit from this class
-    to gain common metadata such as UUID-based identity and automatic
-    timestamp management for creation and updates.
+    __abstract__ = True
 
-    Attributes:
-        id (str): Universally unique identifier (UUID4) for the entity.
-        created_at (datetime): Timestamp representing creation time.
-        updated_at (datetime): Timestamp reflecting the last modification time.
-    """
-
-    def __init__(self):
-        """Initializes a new instance with a UUID and current timestamps."""
-        # Génère un identifiant unique pour chaque instance
-        self.id = str(uuid.uuid4())
-        # Enregistre la date de création de l'instance
-        self.created_at = datetime.now()
-        # Initialise la date de dernière mise à jour à la création
-        self.updated_at = datetime.now()
+    id = db.Column(db.String(36), primary_key=True,
+                   default=lambda: str(uuid.uuid4()))
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.now, onupdate=datetime.now)
 
     def save(self):
         """
