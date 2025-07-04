@@ -25,7 +25,7 @@ class HBnBFacade:
         """
         Initializes the internal repositories for each entity type.
         """
-        self.user_repo = UserRepository(User)
+        self.user_repo = UserRepository()
         self.place_repo = SQLAlchemyRepository(Place)
         self.review_repo = SQLAlchemyRepository(Review)
         self.amenity_repo = SQLAlchemyRepository(Amenity)
