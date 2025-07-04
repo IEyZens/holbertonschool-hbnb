@@ -1,10 +1,13 @@
+# Importation des modules nécessaires
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import request
 from app.services import facade
 
+
 # Création du namespace RESTx pour les opérations liées aux avis utilisateurs
 api = Namespace('reviews', description='Review operations')
+
 
 # Définition du modèle Review utilisé pour la validation d'entrée et la documentation Swagger
 review_model = api.model('Review', {
@@ -32,8 +35,7 @@ class ReviewList(Resource):
     """
     Resource for collection-level operations on review entities.
 
-    Supports creation of a new review and retrieval of all stored reviews.
-    Ensures data contract validation and delegates all logic to the business layer.
+    Supports creation of a new review and retrieval of all stored reviews. Ensures data contract validation and delegates all logic to the business layer.
     """
 
     # Indique que le corps de la requête doit respecter le modèle review_model
@@ -47,8 +49,7 @@ class ReviewList(Resource):
         """
         Create a new review entry.
 
-        Validates the input payload, checks for foreign key integrity (user/place),
-        and stores the review using the service layer. Errors return meaningful HTTP status.
+        Validates the input payload, checks for foreign key integrity (user/place), and stores the review using the service layer. Errors return meaningful HTTP status.
 
         Returns:
             dict: Created review metadata or HTTP 400 with error message.
@@ -80,8 +81,7 @@ class ReviewList(Resource):
         """
         Retrieve all reviews from the system.
 
-        This endpoint returns a flat list of all review entities available.
-        The data is structured according to the internal representation schema.
+        This endpoint returns a flat list of all review entities available. The data is structured according to the internal representation schema.
 
         Returns:
             list: All reviews with HTTP 200.
@@ -107,8 +107,7 @@ class ReviewResource(Resource):
     """
     Resource for single-entity operations on a Review.
 
-    Supports retrieving, updating, and deleting a specific review
-    identified by its unique identifier.
+    Supports retrieving, updating, and deleting a specific review identified by its unique identifier.
     """
 
     # Réponse 200 si les détails de l'avis sont récupérés
@@ -155,8 +154,7 @@ class ReviewResource(Resource):
         """
         Update an existing review entry.
 
-        Accepts a JSON payload with the updated attributes. Verifies data integrity
-        and applies changes in-place via the service layer.
+        Accepts a JSON payload with the updated attributes. Verifies data integrity and applies changes in-place via the service layer.
 
         Args:
             review_id (str): Review unique identifier.
