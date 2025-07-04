@@ -18,7 +18,7 @@ def setup_function():
 def create_user():
     # Génère un UUID pour garantir l’unicité de l’email
     import uuid
-    return User("Test", "Owner", f"{uuid.uuid4()}@example.com")
+    return User("Test", "Owner", f"{uuid.uuid4()}@example.com", "password123")
 
 
 # Test de la création valide d'un lieu (Place)
@@ -33,7 +33,8 @@ def test_valid_place_creation():
     assert place.price == 120.0
     assert place.latitude == 45.0
     assert place.longitude == 2.0
-    assert place.owner == user
+    # Correction : Place n'a pas d'attribut 'owner', mais 'user'
+    assert place.user == user
     assert place.max_person == 4
     assert place.reviews == []
     assert place.amenities == []
