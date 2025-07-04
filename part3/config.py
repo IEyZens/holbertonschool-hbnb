@@ -7,6 +7,7 @@ Supports development mode and default fallback configuration.
 
 import os
 
+
 class Config:
     """
     Base configuration class.
@@ -20,6 +21,7 @@ class Config:
     # Mode debug désactivé par défaut
     DEBUG = False
 
+
 class DevelopmentConfig(Config):
     """
     Configuration spécifique à l'environnement de développement.
@@ -28,6 +30,9 @@ class DevelopmentConfig(Config):
     """
     # Active le mode debug pour le développement
     DEBUG = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///development.db'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 
 # Dictionnaire d'association des environnements à leurs configurations
 config = {
