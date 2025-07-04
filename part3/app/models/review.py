@@ -1,3 +1,4 @@
+# Importation des modules nécessaires
 from app import db, bcrypt
 import uuid
 from .base_model import BaseModel
@@ -7,8 +8,7 @@ class Review(BaseModel):
     """
     Entity representing a textual and numerical evaluation made by a user on a place.
 
-    Encapsulates validation rules and strong typing for user-generated feedback.
-    Enforces referential integrity by ensuring the user and place are valid domain objects.
+    Encapsulates validation rules and strong typing for user-generated feedback. Enforces referential integrity by ensuring the user and place are valid domain objects.
 
     Attributes:
         text (str): The content of the review.
@@ -28,7 +28,9 @@ class Review(BaseModel):
 
     def __init__(self, text: str, rating: int, place, user):
         """
-        Initializes a Review entity and validates all its core fields.
+        Initialize a Review entity and validate all its core fields.
+
+        Checks for valid text, ensures the rating is within the allowed range (1-5), and verifies that both the user and place are valid instances of their respective classes.
 
         Args:
             text (str): Review message content.
