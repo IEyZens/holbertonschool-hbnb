@@ -1,3 +1,4 @@
+# Importation des modules nécessaires
 from app import db, bcrypt
 import uuid
 from .base_model import BaseModel
@@ -7,9 +8,7 @@ class Amenity(BaseModel):
     """
     Data model representing an amenity entity associated with a place.
 
-    This class defines a structured feature such as Wi-Fi or Parking,
-    applying constraints on its attributes for data integrity and
-    consistency across the application.
+    This class defines a structured feature such as Wi-Fi or Parking, applying constraints on its attributes for data integrity and consistency across the application.
 
     Attributes:
         name (str): The name of the amenity, required and limited to 50 characters.
@@ -24,9 +23,7 @@ class Amenity(BaseModel):
         """
         Construct an Amenity object with validation.
 
-        Ensures the input meets type and length constraints before
-        persisting the attribute in memory. Inherits standard metadata
-        such as UUID and timestamps from the base model.
+        Ensures the input meets type and length constraints before persisting the attribute in memory. Inherits standard metadata such as UUID and timestamps from the base model.
 
         Args:
             name (str): The display name of the amenity.
