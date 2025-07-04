@@ -1,3 +1,4 @@
+# Importation des modules nécessaires
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.services import facade
@@ -15,11 +16,10 @@ amenity_model = api.model('Amenity', {
 @api.route('/')
 class AmenityList(Resource):
     """
-    Resource class managing collection-level operations for amenity data.
+    Resource class for managing collection-level operations on amenities.
 
-    This endpoint allows clients to create a new amenity entity or
-    retrieve the full list of existing amenities. Input validation is
-    performed via API models, and business rules are enforced through the facade layer.
+    This class provides endpoints to create a new amenity or retrieve all existing amenities.
+    Input validation is performed using the API model, and business logic is handled by the facade layer.
     """
 
     # Spécifie que cette méthode attend un corps de requête conforme au modèle amenity_model
@@ -30,15 +30,14 @@ class AmenityList(Resource):
     @api.response(400, 'Invalid input data')
     def post(self):
         """
-        Create a new amenity entry.
+        Create a new amenity.
 
-        Receives a JSON payload validated against the Amenity data model.
-        Delegates creation logic to the business facade layer and returns
-        a structured response including the generated amenity ID.
+        This endpoint receives a JSON payload validated against the Amenity model.
+        The creation logic is delegated to the business facade layer. On success, returns the created amenity with its ID.
+        On failure, returns an error message with HTTP 400.
 
         Returns:
-            JSON: Amenity representation with HTTP 201 on success,
-                  or HTTP 400 with error details.
+            tuple: (JSON response, HTTP status code)
         """
         # Récupération des données envoyées dans le corps de la requête
         amenity_data = api.payload
@@ -59,14 +58,13 @@ class AmenityList(Resource):
     @api.response(200, 'List of amenities retrieved successfully')
     def get(self):
         """
-        Retrieve all available amenities.
+        Retrieve all amenities.
 
-        Queries the backend service layer to retrieve all amenity data
-        currently stored. The result is returned as a list of structured
-        dictionaries containing amenity IDs and names.
+        This endpoint queries the backend service layer to get all amenities currently stored.
+        Returns a list of amenity objects (id and name) with HTTP 200.
 
         Returns:
-            JSON: List of amenity objects with HTTP 200.
+            tuple: (list of amenities as JSON, HTTP status code)
         """
         # Appel à la façade pour récupérer toutes les commodités
         amenities = facade.get_all_amenities()
@@ -83,11 +81,10 @@ class AmenityList(Resource):
 @api.route('/<amenity_id>')
 class AmenityResource(Resource):
     """
-    Resource class managing item-level operations on a single amenity.
+    Resource class for managing item-level operations on a single amenity.
 
-    This endpoint supports retrieval and update of a specific amenity,
-    identified by its unique ID. All logic is delegated to the facade layer,
-    and strict validation rules apply to incoming data.
+    This class provides endpoints to retrieve or update a specific amenity by its unique ID.
+    All business logic is delegated to the facade layer, and input data is strictly validated.
     """
 
     # Réponse en cas de succès : détails d’une commodité récupérés
@@ -98,11 +95,14 @@ class AmenityResource(Resource):
         """
         Retrieve details of a specific amenity.
 
+        This endpoint returns the details of an amenity identified by its unique ID.
+        If the amenity is not found, returns an error message with HTTP 404.
+
         Args:
-            amenity_id (str): Unique identifier of the amenity resource.
+            amenity_id (str): Unique identifier of the amenity.
 
         Returns:
-            JSON: Amenity details if found (HTTP 200), or error message (HTTP 404).
+            tuple: (amenity details as JSON, HTTP status code)
         """
         # Recherche de la commodité via la façade
         amenity = facade.get_amenity(amenity_id)
@@ -126,17 +126,17 @@ class AmenityResource(Resource):
     @api.response(400, 'Invalid input data')
     def put(self, amenity_id):
         """
-        Update a specific amenity record.
+        Update a specific amenity.
 
-        Accepts a JSON payload with updated data for the amenity identified
-        by the provided ID. If the amenity exists, it is updated and returned.
-        Otherwise, appropriate error status is returned.
+        This endpoint accepts a JSON payload with updated data for the amenity identified by the given ID.
+        If the amenity exists, it is updated and the new data is returned. If not, returns an error message with HTTP 404.
+        On invalid input, returns an error message with HTTP 400.
 
         Args:
             amenity_id (str): Unique identifier of the amenity.
 
         Returns:
-            JSON: Updated amenity object or error message.
+            tuple: (updated amenity as JSON, HTTP status code)
         """
         # Récupération des données d'entrée fournies dans le corps de la requête
         amenity_api = api.payload
