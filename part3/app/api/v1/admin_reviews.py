@@ -22,6 +22,11 @@ review_update_model = api.model('Review', {
 
 @api.route('/reviews/<review_id>')
 class AdminReviewResource(Resource):
+    """
+    Resource for admin operations on a specific review.
+
+    Allows an admin or the review's author to update or delete a review.
+    """
     @api.expect(review_update_model)
     # Réponse 200 si la mise à jour est effectuée
     @api.response(200, 'Review updated successfully')
@@ -32,11 +37,22 @@ class AdminReviewResource(Resource):
     @api.response(403, 'Unauthorized action')
     @jwt_required()
     def put(self, review_id):
+        """
+        Update a review by its ID. Only admins or the review's author can update.
+
+        Args:
+            review_id (str): The UUID of the review to update.
+
+        Returns:
+            dict: Updated review information or error details with appropriate HTTP status.
+        """
         current_user = get_jwt_identity()
 
+        # Vérifie si l'utilisateur est admin ou auteur de l'avis
         is_admin = current_user.get('is_admin', False)
         user_id = current_user.get('id')
 
+        # Récupère l'avis à modifier
         review = facade.get_review(review_id)
 
         if not review:
@@ -45,9 +61,11 @@ class AdminReviewResource(Resource):
         if not is_admin and review.user.id != user_id:
             return {'error': 'Unauthorized action'}, 403
 
+        # Récupère les données envoyées par l'API
         review_api = api.payload
 
         try:
+            # Tente de mettre à jour l'avis avec les nouvelles données
             review_data = facade.update_review(review_id, review_api)
 
             return {
@@ -59,7 +77,7 @@ class AdminReviewResource(Resource):
             }, 200
 
         except ValueError as e:
-            # Retourne une erreur si l'avis est introuvable
+            # Retourne une erreur métier si les données sont invalides
             return {'error': str(e)}, 400
         except Exception as e:
             # Gestion générique d’exception serveur : erreur 500
@@ -71,11 +89,22 @@ class AdminReviewResource(Resource):
     @api.response(403, 'Unauthorized action')
     @jwt_required()
     def delete(self, review_id):
+        """
+        Delete a review by its ID. Only admins or the review's author can delete.
+
+        Args:
+            review_id (str): The UUID of the review to delete.
+
+        Returns:
+            dict: Success message or error details with appropriate HTTP status.
+        """
         current_user = get_jwt_identity()
 
+        # Vérifie si l'utilisateur est admin ou auteur de l'avis
         is_admin = current_user.get('is_admin', False)
         user_id = current_user.get('id')
 
+        # Récupère l'avis à supprimer
         review = facade.get_review(review_id)
 
         if not review:
@@ -85,6 +114,7 @@ class AdminReviewResource(Resource):
             return {'error': 'Unauthorized action'}, 403
 
         try:
+            # Tente de supprimer l'avis
             review_data = facade.delete_review(review_id)
 
             if not review_data:
@@ -93,6 +123,8 @@ class AdminReviewResource(Resource):
                 return {'message': 'Review successfully deleted'}, 200
 
         except ValueError as e:
+            # Retourne une erreur métier si les données sont invalides
             return {'error': str(e)}, 400
         except Exception as e:
+            # Gestion générique d’exception serveur : erreur 500
             return {'error': 'Internal server error', 'details': str(e)}, 500
