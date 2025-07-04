@@ -25,6 +25,11 @@ user_update_model = api.model('User', {
 
 @api.route('/users/<user_id>')
 class AdminUserResource(Resource):
+    """
+    Resource for admin operations on a specific user.
+
+    Allows an admin to update a user’s data.
+    """
     @api.expect(user_update_model)
     @api.response(200, 'User updated successfully')
     @api.response(404, 'User not found')
@@ -32,25 +37,38 @@ class AdminUserResource(Resource):
     @api.response(403, 'Unauthorized action')
     @jwt_required()
     def put(self, user_id):
+        """
+        Update a user by their ID. Only admins can update users.
+
+        Args:
+            user_id (str): The UUID of the user to update.
+
+        Returns:
+            dict: Updated user data or error details.
+        """
         current_user = get_jwt_identity()
         user_api = api.payload
 
+        # Vérifie si l'utilisateur courant est admin
         if not current_user.get('is_admin'):
             return {'error': 'Admin privileges required'}, 403
 
         email = user_api.get('email')
 
+        # Vérifie si l'email est déjà utilisé par un autre utilisateur
         if email:
             existing_user = facade.get_user_by_email(email)
             if existing_user and str(existing_user.id) != user_id:
                 return {'error': 'Email is already in use'}, 400
 
+        # Récupère l'utilisateur à mettre à jour
         user = facade.get_user(user_id)
 
         if not user:
             return {'error': 'User not found'}, 404
 
         try:
+            # Tente de mettre à jour l'utilisateur avec les nouvelles données
             user_data = facade.update_user(user_id, user_api)
 
             return {
@@ -62,27 +80,42 @@ class AdminUserResource(Resource):
             }, 200
 
         except ValueError as e:
+            # Retourne une erreur métier si les données sont invalides
             return {'error': str(e)}, 400
 
 
 @api.route('/users/')
 class AdminUserCreate(Resource):
+    """
+    Resource for admin user creation.
+
+    Allows an admin to create a new user.
+    """
     @api.expect(user_model, validate=True)
     @api.response(201, 'User successfully created')
     @api.response(400, 'Invalid input or email already registered')
     @api.response(403, 'Unauthorized action')
     @jwt_required()
     def post(self):
+        """
+        Create a new user. Only admins can create users.
+
+        Returns:
+            dict: Newly created user data or error details.
+        """
         current_user = get_jwt_identity()
+        # Vérifie si l'utilisateur courant est admin
         if not current_user.get('is_admin'):
             return {'error': 'Admin privileges required'}, 403
 
         user_data = api.payload
         email = user_data.get('email')
 
+        # Vérifie si l'email est déjà enregistré
         if facade.get_user_by_email(email):
             return {'error': 'Email already registered'}, 400
 
+        # Crée le nouvel utilisateur
         new_user = facade.create_user(user_data)
         return {
             'id': new_user.id,
