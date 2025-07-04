@@ -58,7 +58,7 @@ place_input_model = api.model('PlaceInput', {
     'amenities': fields.List(fields.String, description='List of amenity IDs')
 })
 
-place_update_model = api.model('PlaceInput', {
+place_update_model = api.model('PlaceUpdateInput', {
     'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(required=True, description='Description of the place'),
     'price': fields.Float(required=True, description='Price per night'),
