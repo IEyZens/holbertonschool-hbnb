@@ -29,6 +29,9 @@ class User(BaseModel):
     password = db.Column(db.String(128), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
 
+    reviews = db.relationship('Review', backref='user', lazy=True)
+    places = db.relationship('Place', backref='user', lazy=True)
+
     # Ensemble statique pour suivre les emails existants (unicité)
     existing_emails = set()
 
@@ -90,10 +93,6 @@ class User(BaseModel):
         self.email = email
         self.is_admin = is_admin
         self.hash_password(password)
-        # Initialisation de la liste des lieux créés par l'utilisateur
-        self.places = []
-        # Initialisation de la liste des avis publiés par l'utilisateur
-        self.reviews = []
 
     def add_place(self, place):
         """
