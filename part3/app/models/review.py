@@ -1,3 +1,5 @@
+from app import db, bcrypt
+import uuid
 from .base_model import BaseModel
 
 
@@ -14,6 +16,15 @@ class Review(BaseModel):
         place (Place): The place being reviewed (foreign key).
         user (User): The author of the review (foreign key).
     """
+
+    __tablename__ = 'reviews'
+
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    text = db.Column(db.String(300), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    place_id = db.Column(db.Integer, db.ForeignKey(
+        'places.id'), nullable=False)
 
     def __init__(self, text: str, rating: int, place, user):
         """
