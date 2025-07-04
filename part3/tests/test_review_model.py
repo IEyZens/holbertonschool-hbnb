@@ -14,7 +14,7 @@ def setup_function():
 # Fonction utilitaire pour créer un utilisateur valide
 def create_valid_user():
     # Retourne une instance de User valide avec des valeurs standards
-    return User("John", "Doe", "john.doe@example.com")
+    return User("John", "Doe", "john.doe@example.com", "password123")
 
 
 # Fonction utilitaire pour créer un lieu valide associé à un utilisateur
