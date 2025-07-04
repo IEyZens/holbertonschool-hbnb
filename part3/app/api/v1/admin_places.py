@@ -38,7 +38,6 @@ place_model = api.model('Place', {
     'max_person': fields.Integer(required=True, description='Maximum number of persons allowed'),
     'owner': fields.Nested(user_model, description='Owner of the place'),
     'amenities': fields.List(fields.Nested(amenity_model), description='List of amenities'),
-    'reviews': fields.List(fields.Nested(review_model), description='List of reviews')
 })
 
 place_update_model = api.model('Place', {
@@ -48,9 +47,7 @@ place_update_model = api.model('Place', {
     'latitude': fields.Float(required=False, description='Latitude of the place'),
     'longitude': fields.Float(required=False, description='Longitude of the place'),
     'max_person': fields.Integer(required=False, description='Maximum number of persons allowed'),
-    'owner': fields.Nested(user_model, description='Owner of the place'),
     'amenities': fields.List(fields.Nested(amenity_model), description='List of amenities'),
-    'reviews': fields.List(fields.Nested(review_model), description='List of reviews')
 })
 
 
