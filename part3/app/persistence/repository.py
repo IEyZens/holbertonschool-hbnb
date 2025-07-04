@@ -145,6 +145,12 @@ class InMemoryRepository(Repository):
 
 
 class SQLAlchemyRepository(Repository):
+    """
+    SQLAlchemy-backed repository implementation.
+
+    Provides CRUD and attribute-based queries using SQLAlchemy ORM.
+    """
+
     def __init__(self, model):
         self.model = model
 
@@ -161,15 +167,25 @@ class SQLAlchemyRepository(Repository):
     def update(self, obj_id, data):
         obj = self.get(obj_id)
         if obj:
-            for key, value in data.items():
-                setattr(obj, key, value)
+            if isinstance(data, dict):
+                for key, value in data.items():
+                    setattr(obj, key, value)
+            else:
+                # Remplacement complet si data est un objet
+                obj = data
             db.session.commit()
+            return obj
+        else:
+            raise KeyError("Object not found")
 
     def delete(self, obj_id):
         obj = self.get(obj_id)
         if obj:
             db.session.delete(obj)
             db.session.commit()
+            return True
+        return False
 
     def get_by_attribute(self, attr_name, attr_value):
-        return self.model.query.filter_by(**{attr_name: attr_value}).first()
+        # Retourne une liste de tous les objets correspondant à l'attribut
+        return self.model.query.filter(getattr(self.model, attr_name) == attr_value).all()
