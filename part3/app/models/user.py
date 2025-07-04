@@ -1,3 +1,5 @@
+from app import db, bcrypt
+import uuid
 from .base_model import BaseModel
 import re
 
@@ -18,6 +20,14 @@ class User(BaseModel):
         places (list): List of Place instances owned by the user.
         reviews (list): List of Review instances authored by the user.
     """
+
+    __tablename__ = 'users'
+
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120), nullable=False, unique=True)
+    password = db.Column(db.String(128), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
 
     # Ensemble statique pour suivre les emails existants (unicité)
     existing_emails = set()
