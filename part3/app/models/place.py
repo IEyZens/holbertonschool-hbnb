@@ -1,7 +1,9 @@
+# Importation des modules nécessaires
 from app import db, bcrypt
 import uuid
 from .base_model import BaseModel
 
+# Table d'association entre Place et Amenity (relation many-to-many)
 place_amenity = db.Table('place_amenity',
                          db.Column('place_id', db.Integer, db.ForeignKey(
                              'places.id'), primary_key=True),
@@ -14,9 +16,7 @@ class Place(BaseModel):
     """
     Domain entity representing a rentable place listed on the platform.
 
-    This model encapsulates geographic, descriptive, and ownership data, and enforces
-    strict validation constraints. It also manages relationships with User, Amenity,
-    and Review entities.
+    This model encapsulates geographic, descriptive, and ownership data, and enforces strict validation constraints. It also manages relationships with User, Amenity, and Review entities.
 
     Attributes:
         title (str): Title of the place, max 100 characters.
@@ -48,9 +48,16 @@ class Place(BaseModel):
         """
         Initializes a new Place entity and validates all core attributes.
 
-        Enforces geolocation bounds, pricing constraints, title length,
-        and verifies that owner is a valid User instance. Reviews and amenities
-        are initialized as empty lists by default.
+        Enforces geolocation bounds, pricing constraints, title length, and verifies that owner is a valid User instance. Reviews and amenities are initialized as empty lists by default.
+
+        Args:
+            title (str): The title of the place.
+            description (str): The description of the place.
+            price (float): Price per night (must be >= 0).
+            latitude (float): Latitude in degrees (-90 to 90).
+            longitude (float): Longitude in degrees (-180 to 180).
+            user (User): The owner of the place.
+            max_person (int): Maximum number of persons allowed.
 
         Raises:
             ValueError: For out-of-range or missing data.
