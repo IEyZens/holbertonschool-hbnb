@@ -1,4 +1,13 @@
+from app import db, bcrypt
+import uuid
 from .base_model import BaseModel
+
+place_amenity = db.Table('place_amenity',
+                         db.Column('place_id', db.Integer, db.ForeignKey(
+                             'places.id'), primary_key=True),
+                         db.Column('amenity_id', db.Integer, db.ForeignKey(
+                             'amenities.id'), primary_key=True)
+                         )
 
 
 class Place(BaseModel):
@@ -21,7 +30,21 @@ class Place(BaseModel):
         amenities (list): List of associated Amenity instances.
     """
 
-    def __init__(self, title: str, description: str, price: float, latitude: float, longitude: float, owner, max_person: int):
+    __tablename__ = 'places'
+
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(500), nullable=True)
+    price = db.Column(db.Float, nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    owner_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+
+    reviews = db.relationship('Review', backref='place', lazy=True)
+    amenities = db.relationship(
+        'Amenity', secondary=place_amenity, backref='places', lazy=True)
+
+    def __init__(self, title: str, description: str, price: float, latitude: float, longitude: float, user, max_person: int):
         """
         Initializes a new Place entity and validates all core attributes.
 
@@ -59,7 +82,7 @@ class Place(BaseModel):
         # Importation locale de la classe User pour éviter les importations circulaires
         from .user import User
         # Vérifie que l'owner est une instance de User
-        if not isinstance(owner, User):
+        if not isinstance(user, User):
             raise TypeError(
                 "Invalid owner: must be an instance of the User class.")
 
@@ -73,12 +96,8 @@ class Place(BaseModel):
         self.price = price
         self.latitude = latitude
         self.longitude = longitude
-        self.owner = owner
+        self.user = user
         self.max_person = max_person
-        # Initialisation de la liste des avis
-        self.reviews = []
-        # Initialisation de la liste des commodités
-        self.amenities = []
 
     def add_review(self, review):
         """
