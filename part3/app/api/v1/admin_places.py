@@ -53,6 +53,11 @@ place_update_model = api.model('Place', {
 
 @api.route('/places/<place_id>')
 class AdminPlaceModify(Resource):
+    """
+    Resource for admin operations on a specific place.
+
+    This endpoint allows an admin or owner to update a place's details. Enforces authentication, authorization, and correct data contract for update operations.
+    """
     @api.expect(place_update_model)
     # Réponse 200 si mise à jour réussie
     @api.response(200, 'Place updated successfully')
@@ -63,11 +68,23 @@ class AdminPlaceModify(Resource):
     @api.response(400, 'Invalid input data')
     @jwt_required()
     def put(self, place_id):
+        """
+        Update a place by its ID. Only admins or the owner can update.
+
+        Args:
+            place_id (str): The UUID of the place to update.
+
+        Returns:
+            dict: Updated place information or error details with appropriate HTTP status.
+        """
+        # Récupération de l'identité de l'utilisateur courant
         current_user = get_jwt_identity()
 
+        # Vérifie si l'utilisateur est admin ou propriétaire
         is_admin = current_user.get('is_admin', False)
         user_id = current_user.get('id')
 
+        # Récupère le lieu à modifier
         place = facade.get_place(place_id)
 
         if not place:
@@ -76,9 +93,11 @@ class AdminPlaceModify(Resource):
         if not is_admin and place.owner.id != user_id:
             return {'error': 'Unauthorized action'}, 403
 
+        # Récupère les données envoyées par l'API
         place_api = api.payload
 
         try:
+            # Tente de mettre à jour le lieu avec les nouvelles données
             place_data = facade.update_place(place_id, place_api)
 
             return {
