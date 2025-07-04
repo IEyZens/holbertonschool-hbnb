@@ -41,18 +41,26 @@ place_model = api.model('Place', {
     'reviews': fields.List(fields.Nested(review_model), description='List of reviews')
 })
 
-place_update_model = api.model('Place', {
-    'title': fields.String(required=False, description='Title of the place'),
+place_input_model = api.model('PlaceInput', {
+    'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(required=True, description='Description of the place'),
-    'price': fields.Float(required=False, description='Price per night'),
-    'latitude': fields.Float(required=False, description='Latitude of the place'),
-    'longitude': fields.Float(required=False, description='Longitude of the place'),
-    'max_person': fields.Integer(required=False, description='Maximum number of persons allowed'),
-    'owner': fields.Nested(user_model, description='Owner of the place'),
-    'amenities': fields.List(fields.Nested(amenity_model), description='List of amenities'),
-    'reviews': fields.List(fields.Nested(review_model), description='List of reviews')
+    'price': fields.Float(required=True, description='Price per night'),
+    'latitude': fields.Float(required=True, description='Latitude of the place'),
+    'longitude': fields.Float(required=True, description='Longitude of the place'),
+    'owner_id': fields.String(required=True, description='ID of the owner'),
+    'max_person': fields.Integer(required=True, description='Maximum number of persons allowed'),
+    'amenities': fields.List(fields.String, description='List of amenity IDs')
 })
 
+place_update_model = api.model('PlaceInput', {
+    'title': fields.String(required=True, description='Title of the place'),
+    'description': fields.String(required=True, description='Description of the place'),
+    'price': fields.Float(required=True, description='Price per night'),
+    'latitude': fields.Float(required=True, description='Latitude of the place'),
+    'longitude': fields.Float(required=True, description='Longitude of the place'),
+    'max_person': fields.Integer(required=True, description='Maximum number of persons allowed'),
+    'amenities': fields.List(fields.String, description='List of amenity IDs')
+})
 
 @api.route('/')
 class PlaceList(Resource):
@@ -65,7 +73,7 @@ class PlaceList(Resource):
     """
 
     # Indique que la requête attend des données conformes au modèle place_model
-    @api.expect(place_model)
+    @api.expect(place_input_model)
     # Réponse 201 si la création est un succès
     @api.response(201, 'Place successfully created')
     # Réponse 400 en cas de données invalides
