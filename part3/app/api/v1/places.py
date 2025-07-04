@@ -1,15 +1,19 @@
+# Importation des modules nécessaires
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.services import facade
 
+
 # Création d’un namespace pour les opérations relatives aux lieux (places)
 api = Namespace('places', description='Place operations')
+
 
 # Définition du modèle de commodité utilisé dans un lieu
 amenity_model = api.model('PlaceAmenity', {
     'id': fields.String(description='Amenity ID'),
     'name': fields.String(description='Name of the amenity')
 })
+
 
 # Définition du modèle utilisateur lié à un lieu
 user_model = api.model('PlaceUser', {
@@ -19,6 +23,7 @@ user_model = api.model('PlaceUser', {
     'email': fields.String(description='Email of the owner')
 })
 
+
 # Définition du modèle de commentaire associé à un lieu
 review_model = api.model('PlaceReview', {
     'id': fields.String(description='Review ID'),
@@ -26,6 +31,7 @@ review_model = api.model('PlaceReview', {
     'rating': fields.Integer(description='Rating of the place (1-5)'),
     'user_id': fields.String(description='ID of the user')
 })
+
 
 # Définition du modèle principal représentant un lieu
 place_model = api.model('Place', {
@@ -68,9 +74,7 @@ class PlaceList(Resource):
     """
     Resource class that handles collection-level operations on Place data.
 
-    This endpoint allows creation of new Place entities and retrieval of
-    all existing Place records. It enforces data contract validation,
-    and delegates business logic to the facade service layer.
+    This endpoint allows creation of new Place entities and retrieval of all existing Place records. It enforces data contract validation, and delegates business logic to the facade service layer.
     """
 
     # Indique que la requête attend des données conformes au modèle place_model
@@ -85,13 +89,10 @@ class PlaceList(Resource):
         """
         Create a new place entity.
 
-        Accepts a validated JSON payload describing the new place to be created.
-        Validation includes constraints on numeric fields, coordinates, and foreign keys.
-        Returns a concise representation of the newly created Place.
+        Accepts a validated JSON payload describing the new place to be created. Validation includes constraints on numeric fields, coordinates, and foreign keys. Returns a concise representation of the newly created Place.
 
         Returns:
-            dict: JSON object containing key place attributes and HTTP 201 status,
-                  or HTTP 400 with error details.
+            dict: JSON object containing key place attributes and HTTP 201 status, or HTTP 400 with error details.
         """
         # Extraction des données envoyées dans la requête
         place_data = api.payload
@@ -123,8 +124,7 @@ class PlaceList(Resource):
         """
         Retrieve a list of all places.
 
-        This method returns all Place entities currently registered in memory.
-        Each record contains the core metadata required for public display.
+        This method returns all Place entities currently registered in memory. Each record contains the core metadata required for public display.
 
         Returns:
             list: A list of place objects with HTTP 200 status.
@@ -153,9 +153,7 @@ class PlaceResource(Resource):
     """
     Resource class that manages data for a single Place instance.
 
-    This endpoint supports retrieval and update operations for a specific
-    Place entity identified by a UUID. Payloads and identifiers are validated
-    to ensure consistency and correct linkage to nested resources.
+    This endpoint supports retrieval and update operations for a specific Place entity identified by a UUID. Payloads and identifiers are validated to ensure consistency and correct linkage to nested resources.
     """
 
     # Réponse 200 si les détails du lieu sont trouvés
@@ -170,8 +168,7 @@ class PlaceResource(Resource):
             place_id (str): The UUID of the place resource.
 
         Returns:
-            dict: JSON-formatted place details with nested user and amenities data,
-                  or HTTP 404 if not found.
+            dict: JSON-formatted place details with nested user and amenities data, or HTTP 404 if not found.
         """
         try:
             # Récupération du lieu ciblé par son ID
@@ -222,8 +219,7 @@ class PlaceResource(Resource):
         """
         Update an existing place entity.
 
-        Accepts a payload that may partially or fully replace the place's attributes.
-        Performs validation on updated values (e.g., price, coordinates) and updates the repository.
+        Accepts a payload that may partially or fully replace the place's attributes. Performs validation on updated values (e.g., price, coordinates) and updates the repository.
 
         Args:
             place_id (str): The UUID of the place to update.
