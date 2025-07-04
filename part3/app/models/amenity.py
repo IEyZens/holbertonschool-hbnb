@@ -1,3 +1,5 @@
+from app import db, bcrypt
+import uuid
 from .base_model import BaseModel
 
 
@@ -12,6 +14,11 @@ class Amenity(BaseModel):
     Attributes:
         name (str): The name of the amenity, required and limited to 50 characters.
     """
+
+    __tablename__ = 'amenities'
+
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    name = db.Column(db.String(100), nullable=False)
 
     def __init__(self, name: str):
         """
