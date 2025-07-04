@@ -22,6 +22,7 @@ user_update_model = api.model('User', {
     'is_admin': fields.Boolean(required=False, description='Admin status')
 })
 
+
 @api.route('/users/<user_id>')
 class AdminUserResource(Resource):
     @api.expect(user_update_model)
@@ -90,44 +91,3 @@ class AdminUserCreate(Resource):
             'email': new_user.email,
             'is_admin': new_user.is_admin
         }, 201
-
-
-@api.route('/users/<user_id>')
-class AdminUserModify(Resource):
-    @api.expect(user_update_model)
-    @api.response(200, 'User updated successfully')
-    @api.response(404, 'User not found')
-    @api.response(400, 'Invalid input data')
-    @api.response(403, 'Unauthorized action')
-    @jwt_required()
-    def put(self, user_id):
-        current_user = get_jwt_identity()
-        user_api = api.payload
-        if not current_user.get('is_admin'):
-            return {'error': 'Admin privileges required'}, 403
-
-        email = user_api.get('email')
-
-        if email:
-            existing_user = facade.get_user_by_email(email)
-            if existing_user and str(existing_user.id) != user_id:
-                return {'error': 'Email already in use'}, 400
-
-        user = facade.get_user(user_id)
-
-        if not user:
-            return {'error': 'User not found'}, 404
-
-        try:
-            user_data = facade.update_user(user_id, user_api)
-
-            return {
-                'id': user_data.id,
-                'first_name': user_data.first_name,
-                'last_name': user_data.last_name,
-                'email': user_data.email,
-                'is_admin': user_data.is_admin
-            }, 200
-
-        except ValueError as e:
-            return {'error': str(e)}, 400
