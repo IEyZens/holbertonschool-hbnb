@@ -11,6 +11,7 @@ amenity_model = api.model('Amenity', {
     'name': fields.String(required=True, description='Name of the amenity')
 })
 
+
 @api.route('/amenities/')
 class AdminAmenityCreate(Resource):
     @api.expect(amenity_model)
