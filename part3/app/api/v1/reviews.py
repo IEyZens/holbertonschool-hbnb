@@ -14,6 +14,13 @@ review_model = api.model('Review', {
     'place_id': fields.String(required=True, description='ID of the place')
 })
 
+review_input_model = api.model('ReviewInput', {
+    'text': fields.String(required=True, description='Text of the review'),
+    'rating': fields.Integer(required=True, description='Rating of the place (1-5)'),
+    'user_id': fields.String(required=True, description='ID of the user'),
+    'place_id': fields.String(required=True, description='ID of the place')
+})
+
 review_update_model = api.model('Review', {
     'text': fields.String(required=False, description='Text of the review'),
     'rating': fields.Integer(required=False, description='Rating of the place (1-5)'),
@@ -30,7 +37,7 @@ class ReviewList(Resource):
     """
 
     # Indique que le corps de la requête doit respecter le modèle review_model
-    @api.expect(review_model)
+    @api.expect(review_input_model)
     # Réponse 201 si la création de l'avis est réussie
     @api.response(201, 'Review successfully created')
     # Réponse 400 si les données envoyées sont invalides
