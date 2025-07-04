@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from app import db
 
 # Classe abstraite définissant l'interface d’un repository
+
+
 class Repository(ABC):
     """
     Abstract base class defining the contract for a repository interface.
