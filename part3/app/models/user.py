@@ -1,3 +1,4 @@
+# Importation des modules nécessaires
 from app import db, bcrypt
 import uuid
 from .base_model import BaseModel
@@ -8,9 +9,7 @@ class User(BaseModel):
     """
     Entity representing a user registered on the HBnB platform.
 
-    This model encapsulates identity, access control, and relationships
-    with other entities such as Place and Review. It includes data validation
-    for length, email format, and uniqueness constraints.
+    This model encapsulates identity, access control, and relationships with other entities such as Place and Review. It includes data validation for length, email format, and uniqueness constraints.
 
     Attributes:
         first_name (str): User's first name, max 50 characters.
@@ -39,18 +38,17 @@ class User(BaseModel):
         """
         Initialize a User entity with validation and uniqueness checks.
 
-        Enforces length constraints on names, ensures the email format is valid
-        using a regular expression, and checks that the email is not already registered.
-        Tracks related places and reviews.
+        Enforces length constraints on names, ensures the email format is valid using a regular expression, and checks that the email is not already registered. Tracks related places and reviews.
 
         Args:
             first_name (str): Given name of the user.
             last_name (str): Surname of the user.
             email (str): Unique email address.
+            password (str): Password for the user account.
             is_admin (bool, optional): Admin rights flag. Defaults to False.
 
         Raises:
-            ValueError: For invalid name/email or if email already exists.
+            ValueError: For invalid name/email/password or if email already exists.
             TypeError: If is_admin is not a boolean.
         """
         # Appel au constructeur de BaseModel (id, created_at, updated_at)
@@ -131,9 +129,26 @@ class User(BaseModel):
         self.reviews.append(review)
 
     def hash_password(self, password):
+        """
+        Hash the user's password using bcrypt and stores it in the password attribute.
+
+        Args:
+            password (str): The plain text password to hash.
+        """
+        # Génère un hash pour le mot de passe et l'attribue à l'utilisateur
         from app import bcrypt
         self.password = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def verify_password(self, password):
+        """
+        Verify a plain text password against the hashed password.
+
+        Args:
+            password (str): The plain text password to verify.
+
+        Returns:
+            bool: True if password matches, False otherwise.
+        """
+        # Vérifie que le mot de passe fourni correspond au hash stocké
         from app import bcrypt
         return bcrypt.check_password_hash(self.password, password)
