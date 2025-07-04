@@ -62,6 +62,7 @@ place_update_model = api.model('PlaceInput', {
     'amenities': fields.List(fields.String, description='List of amenity IDs')
 })
 
+
 @api.route('/')
 class PlaceList(Resource):
     """
