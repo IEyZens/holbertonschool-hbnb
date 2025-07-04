@@ -1,9 +1,12 @@
+# Importation des modules nécessaires
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.services import facade
 
+
 # Création du namespace RESTx pour les opérations utilisateur
 api = Namespace('users', description='User operations')
+
 
 # Définition du modèle utilisateur utilisé pour la validation et la documentation Swagger
 user_model = api.model('User', {
@@ -14,6 +17,7 @@ user_model = api.model('User', {
     'is_admin': fields.Boolean(description='Admin status')
 })
 
+# Définition du modèle utilisateur utilisé pour la mise à jour
 user_update_model = api.model('User', {
     'first_name': fields.String(required=False, description='First name of the user'),
     'last_name': fields.String(required=False, description='Last name of the user'),
