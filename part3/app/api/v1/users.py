@@ -39,10 +39,8 @@ class UserList(Resource):
     @api.expect(user_model, validate=True)
     # Réponse 201 si l'utilisateur est créé avec succès
     @api.response(201, 'User successfully created')
-    # Réponse 400 si l’email est déjà utilisé
-    @api.response(400, 'Email already registered')
-    # Réponse 400 si les données sont invalides
-    @api.response(400, 'Invalid input data')
+    # Réponse 400 si l’email est déjà utilisé ou si les données sont invalides
+    @api.response(400, 'Invalid input or email already registered')
     def post(self):
         """
         Register a new user.
