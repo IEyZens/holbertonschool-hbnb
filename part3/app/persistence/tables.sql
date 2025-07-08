@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS Place_Amenity (
 );
 
 INSERT INTO
-    users (
+    User (
         id,
         email,
         first_name,
@@ -58,10 +58,10 @@ VALUES (
         'HBnB',
         '$2a$12$6ZWHgzuFxrBK.MtZPvpa0un.ffOz3kN4Ird/V2wjGWYLNbJbfceqK',
         TRUE
-    )
+    );
 
 INSERT INTO
-    amenities (id, name)
+    Amenity (id, name)
 VALUES (
         '564f7b23-ef41-4142-b53f-55b0a4ebdb36',
         'WiFi'
@@ -73,4 +73,4 @@ VALUES (
     (
         '20825cf0-f620-42c2-bcde-282a2517467c',
         'Air Conditioning'
-    )
+    );
