@@ -1,5 +1,5 @@
 # Importation des modules nécessaires
-from app import db, bcrypt
+from app import db
 import uuid
 from .base_model import BaseModel
 
