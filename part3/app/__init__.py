@@ -23,8 +23,10 @@ def create_app(config_class="config.DevelopmentConfig"):
     """
     Application factory function.
 
-    Creates and configures the Flask app instance, sets up Flask-RESTx,
-    and registers all API namespaces under versioned routes.
+    Creates and configures the Flask app instance using the provided configuration class.
+
+    Args:
+        config_class (str): The import path to the configuration class to use.
 
     Returns:
         Flask: A configured Flask application instance.
