@@ -1,3 +1,4 @@
+```mermaid
 erDiagram
     USER {
         string id
@@ -37,3 +38,4 @@ erDiagram
     PLACE ||--o{ REVIEW : receives
     PLACE ||--o{ PLACE_AMENITY : has
     AMENITY ||--o{ PLACE_AMENITY : is
+```
