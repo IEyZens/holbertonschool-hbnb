@@ -38,13 +38,15 @@ class Place(BaseModel):
     price = db.Column(db.Float, nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
+    max_person = db.Column(db.Integer, nullable=False)
     owner_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
 
     reviews = db.relationship('Review', backref='place', lazy=True)
     amenities = db.relationship(
         'Amenity', secondary=place_amenity, backref='places', lazy=True)
+    owner = db.relationship('User', backref='places', lazy=True)
 
-    def __init__(self, title: str, description: str, price: float, latitude: float, longitude: float, user, max_person: int):
+    def __init__(self, title: str, description: str, price: float, latitude: float, longitude: float, owner, max_person: int):
         """
         Initializes a new Place entity and validates all core attributes.
 
@@ -56,7 +58,7 @@ class Place(BaseModel):
             price (float): Price per night (must be >= 0).
             latitude (float): Latitude in degrees (-90 to 90).
             longitude (float): Longitude in degrees (-180 to 180).
-            user (User): The owner of the place.
+            owner (User): The owner of the place.
             max_person (int): Maximum number of persons allowed.
 
         Raises:
@@ -89,7 +91,7 @@ class Place(BaseModel):
         # Importation locale de la classe User pour éviter les importations circulaires
         from .user import User
         # Vérifie que l'owner est une instance de User
-        if not isinstance(user, User):
+        if not isinstance(owner, User):
             raise TypeError(
                 "Invalid owner: must be an instance of the User class.")
 
@@ -103,7 +105,8 @@ class Place(BaseModel):
         self.price = price
         self.latitude = latitude
         self.longitude = longitude
-        self.user = user
+        self.owner = owner
+        self.owner_id = owner.id
         self.max_person = max_person
 
     def add_review(self, review):
