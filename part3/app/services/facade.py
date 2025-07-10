@@ -18,7 +18,7 @@ class HBnBFacade:
     Responsibilities:
         - Orchestrates creation, update, and retrieval of all domain entities
         - Applies validation and relationship integrity (e.g., Place.owner must exist)
-        - Abstracts access to the persistence layer (InMemoryRepository)
+        - Abstracts access to the persistence layer (SQLAlchemyRepository)
     """
 
     def __init__(self):
