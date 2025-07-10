@@ -33,8 +33,7 @@ def test_valid_place_creation():
     assert place.price == 120.0
     assert place.latitude == 45.0
     assert place.longitude == 2.0
-    # Correction : Place n'a pas d'attribut 'owner', mais 'user'
-    assert place.user == user
+    assert place.owner == user
     assert place.max_person == 4
     assert place.reviews == []
     assert place.amenities == []
