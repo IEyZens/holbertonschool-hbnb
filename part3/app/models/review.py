@@ -1,5 +1,6 @@
 # Importation des modules nécessaires
-from app import db
+from app.extensions import db
+from sqlalchemy.orm import relationship
 import uuid
 from .base_model import BaseModel
 
@@ -8,25 +9,26 @@ class Review(BaseModel):
     """
     Entity representing a textual and numerical evaluation made by a user on a place.
 
-    Encapsulates validation rules and strong typing for user-generated feedback. Enforces referential integrity by ensuring the user and place are valid domain objects.
+    Encapsulates validation rules and strong typing for user-generated feedback.
 
     Attributes:
         text (str): The content of the review.
         rating (int): Rating between 1 and 5.
-        place (Place): The place being reviewed (foreign key).
-        user (User): The author of the review (foreign key).
     """
 
     __tablename__ = 'reviews'
 
-    id = db.Column(db.Integer, primary_key=True, unique=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     text = db.Column(db.String(300), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+
+    # Foreign keys
     place_id = db.Column(db.Integer, db.ForeignKey(
         'places.id'), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey(
+        'users.id'), nullable=False)
 
-    def __init__(self, text: str, rating: int):
+    def __init__(self, text: str, rating: int, place_id: int, user_id: str):
         """
         Initialize a Review entity and validate all its core fields.
 
@@ -56,3 +58,5 @@ class Review(BaseModel):
         # Attribution des attributs à l'instance
         self.text = text
         self.rating = rating
+        self.place_id = place_id
+        self.user_id = user_id

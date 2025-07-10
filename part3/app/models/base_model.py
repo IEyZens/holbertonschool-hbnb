@@ -1,5 +1,5 @@
 # Importation des modules nécessaires
-from app import db
+from app.extensions import db
 import uuid
 from datetime import datetime
 
@@ -8,21 +8,20 @@ class BaseModel(db.Model):
     """
     Abstract base class providing common fields and methods for all data models.
 
-    This class supplies a unique UUID identifier, creation and update timestamps, and utility methods for saving and updating model instances. All models inheriting from BaseModel will automatically include these features.
+    This class supplies a unique identifier, creation and update timestamps, and utility methods for saving and updating model instances. All models inheriting from BaseModel will automatically include these features.
 
     Attributes:
-        id (str): Unique UUID identifier for the instance.
+        id: Unique identifier for the instance (type can be customized by subclasses).
         created_at (datetime): Timestamp of creation.
         updated_at (datetime): Timestamp of last update.
     """
 
     __abstract__ = True
 
-    id = db.Column(db.String(36), primary_key=True,
-                   default=lambda: str(uuid.uuid4()))
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    # Note: id field is not defined here - subclasses must define their own id field
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
-        db.DateTime, default=datetime.now, onupdate=datetime.now)
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def save(self):
         """
@@ -31,7 +30,7 @@ class BaseModel(db.Model):
         This method updates the 'updated_at' field to the current datetime, typically used after a mutation to mark the modification time.
         """
         # Met à jour le timestamp pour refléter la dernière modification
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.utcnow()
 
     def update(self, data):
         """

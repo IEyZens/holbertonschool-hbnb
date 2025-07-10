@@ -1,5 +1,5 @@
 # Importation des modules nécessaires
-from app import db, bcrypt
+from app.extensions import db, bcrypt
 import uuid
 from .base_model import BaseModel
 
@@ -16,7 +16,7 @@ class Amenity(BaseModel):
 
     __tablename__ = 'amenities'
 
-    id = db.Column(db.Integer, primary_key=True, unique=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
 
     def __init__(self, name: str):

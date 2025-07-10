@@ -1,9 +1,11 @@
 # Importation des modules nécessaires
-from app import db, bcrypt
+from app.extensions import db, bcrypt
+from sqlalchemy.orm import relationship
 import uuid
 from .base_model import BaseModel
 
-# Table d'association entre Place et Amenity (relation many-to-many)
+
+# Association table for Place-Amenity many-to-many relationship
 place_amenity = db.Table('place_amenity',
                          db.Column('place_id', db.Integer, db.ForeignKey(
                              'places.id'), primary_key=True),
@@ -16,7 +18,7 @@ class Place(BaseModel):
     """
     Domain entity representing a rentable place listed on the platform.
 
-    This model encapsulates geographic, descriptive, and ownership data, and enforces strict validation constraints. It also manages relationships with User, Amenity, and Review entities.
+    This model encapsulates geographic and descriptive data with strict validation constraints.
 
     Attributes:
         title (str): Title of the place, max 100 characters.
@@ -24,29 +26,27 @@ class Place(BaseModel):
         price (float): Price per night, must be >= 0.
         latitude (float): Latitude coordinate, between -90 and 90.
         longitude (float): Longitude coordinate, between -180 and 180.
-        owner (User): The User who owns this place.
-        max_person (int): Maximum capacity.
-        reviews (list): List of associated Review instances.
-        amenities (list): List of associated Amenity instances.
     """
 
     __tablename__ = 'places'
 
-    id = db.Column(db.Integer, primary_key=True, unique=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(500), nullable=True)
     price = db.Column(db.Float, nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
-    max_person = db.Column(db.Integer, nullable=False)
-    owner_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
 
-    reviews = db.relationship('Review', backref='place', lazy=True)
-    amenities = db.relationship(
-        'Amenity', secondary=place_amenity, backref='places', lazy=True)
-    owner = db.relationship('User', backref='places', lazy=True)
+    # Foreign key to User
+    user_id = db.Column(db.String(36), db.ForeignKey(
+        'users.id'), nullable=False)
 
-    def __init__(self, title: str, description: str, price: float, latitude: float, longitude: float):
+    # Relations SQLAlchemy
+    reviews = relationship('Review', backref='place', lazy=True)
+    amenities = relationship('Amenity', secondary=place_amenity, lazy='subquery',
+                             backref=db.backref('places', lazy=True))
+
+    def __init__(self, title: str, description: str, price: float, latitude: float, longitude: float, user_id: str):
         """
         Initializes a new Place entity and validates all core attributes.
 
@@ -92,3 +92,4 @@ class Place(BaseModel):
         self.price = price
         self.latitude = latitude
         self.longitude = longitude
+        self.user_id = user_id

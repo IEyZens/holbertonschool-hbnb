@@ -72,11 +72,7 @@ class HBnBFacade:
         Returns:
             User or None: The matching user or None if not found.
         """
-        users = self.user_repo.get_by_attribute('email', email)
-        if users:
-            return users[0]
-        else:
-            return None
+        return self.user_repo.get_user_by_email(email)
 
     def get_all_users(self):
         """

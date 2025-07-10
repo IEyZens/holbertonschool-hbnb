@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from app import db
+from app.extensions import db
 
 # Classe abstraite définissant l'interface d’un repository
 
