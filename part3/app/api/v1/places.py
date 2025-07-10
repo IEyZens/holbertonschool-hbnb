@@ -230,12 +230,15 @@ class PlaceResource(Resource):
         # Données mises à jour provenant du client
         place_api = api.payload
         current_user = get_jwt_identity()
+        claims = get_jwt()
         place = facade.get_place(place_id)
 
         if not place:
             return {'error': 'Place not found'}, 404
 
-        if place.owner.id != current_user:
+        # Admins can bypass ownership restrictions
+        is_admin = claims.get('is_admin', False)
+        if not is_admin and place.owner.id != current_user:
             return {'error': 'Unauthorized action'}, 403
 
         try:

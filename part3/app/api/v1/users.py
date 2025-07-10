@@ -142,11 +142,11 @@ class UserResource(Resource):
     @api.response(200, 'User updated successfully')
     @api.response(404, 'User not found')
     @api.response(400, 'Invalid input data')
-    @api.response(403, 'Admin privileges required')
+    @api.response(403, 'Unauthorized action')
     @jwt_required()
     def put(self, user_id):
         """
-        Update an existing user's information. Only admins can modify users.
+        Update an existing user's information. Users can only modify their own data.
 
         Args:
             user_id (str): The ID of the user to update.
@@ -155,10 +155,10 @@ class UserResource(Resource):
             dict: Updated user data if successful.
             tuple: Error message and HTTP status code if failed.
         """
-        # Vérification des privilèges admin
-        claims = get_jwt()
-        if not claims.get('is_admin'):
-            return {'error': 'Admin privileges required'}, 403
+        # Vérification que l'utilisateur modifie ses propres données
+        current_user = get_jwt_identity()
+        if current_user != user_id:
+            return {'error': 'Unauthorized action'}, 403
 
         # Récupération des données envoyées dans la requête
         user_api = api.payload
@@ -167,12 +167,9 @@ class UserResource(Resource):
         if not user:
             return {'error': 'User not found'}, 404
 
-        # Vérification de l'unicité de l'email si fourni
-        email = user_api.get('email')
-        if email:
-            existing_user = facade.get_user_by_email(email)
-            if existing_user and str(existing_user.id) != user_id:
-                return {'error': 'Email is already in use'}, 400
+        # Vérification que l'utilisateur ne modifie pas email ou password
+        if 'email' in user_api or 'password' in user_api:
+            return {'error': 'You cannot modify email or password'}, 400
 
         try:
             # Mise à jour de l'utilisateur via la façade

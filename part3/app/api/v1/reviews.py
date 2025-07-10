@@ -1,6 +1,6 @@
 # Importation des modules nécessaires
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from flask import request
 from app.services import facade
 
@@ -165,12 +165,15 @@ class ReviewResource(Resource):
         # Récupération des nouvelles données pour la mise à jour
         review_api = api.payload
         current_user = get_jwt_identity()
+        claims = get_jwt()
         review = facade.get_review(review_id)
 
         if not review:
             return {'error': 'Review not found'}, 404
 
-        if review.user.id != current_user:
+        # Admins can bypass ownership restrictions
+        is_admin = claims.get('is_admin', False)
+        if not is_admin and review.user.id != current_user:
             return {'error': 'Unauthorized action'}, 403
 
         try:
@@ -212,12 +215,15 @@ class ReviewResource(Resource):
             dict: Success confirmation or HTTP 404 error.
         """
         current_user = get_jwt_identity()
+        claims = get_jwt()
         review = facade.get_review(review_id)
 
         if not review:
             return {'error': 'Review not found'}, 404
 
-        if review.user.id != current_user:
+        # Admins can bypass ownership restrictions
+        is_admin = claims.get('is_admin', False)
+        if not is_admin and review.user.id != current_user:
             return {'error': 'Unauthorized action'}, 403
 
         try:

@@ -180,7 +180,7 @@ class HBnBFacade:
         except KeyError:
             raise ValueError("Error ID: The requested ID does not exist.")
 
-    def create_place(self, place_data, user):
+    def create_place(self, place_data, current_user):
         """
         Create a new Place with data validation and relation enforcement.
 
@@ -188,6 +188,7 @@ class HBnBFacade:
 
         Args:
             place_data (dict): Must include title, price, coordinates, etc.
+            current_user (str): ID of the current authenticated user.
 
         Returns:
             Place: The persisted place object.
@@ -196,7 +197,7 @@ class HBnBFacade:
             ValueError: For missing fields or invalid constraints.
         """
         required_fields = ['title', 'price',
-                           'latitude', 'longitude', 'owner_id', 'max_person']
+                           'latitude', 'longitude', 'max_person']
 
         for field in required_fields:
             if field not in place_data:
@@ -211,7 +212,8 @@ class HBnBFacade:
         if not (-180 <= place_data['longitude'] <= 180):
             raise ValueError("Longitude must be between -180 and 180 degrees.")
 
-        owner = self.user_repo.get(place_data['owner_id'])
+        # Set owner_id to current authenticated user
+        owner = self.user_repo.get(current_user)
         if not owner:
             raise ValueError("Owner not found.")
 
@@ -221,9 +223,11 @@ class HBnBFacade:
             price=place_data['price'],
             latitude=place_data['latitude'],
             longitude=place_data['longitude'],
-            owner=owner,
             max_person=place_data['max_person']
         )
+
+        # Set the owner relationship
+        place.owner = owner
 
         place.amenities = []
         if 'amenities' in place_data:
@@ -310,11 +314,15 @@ class HBnBFacade:
 
         Args:
             review_data (dict): Must include text, rating, user_id, place_id.
+            current_user (str): ID of the current authenticated user.
 
         Returns:
             Review: Created review object.
+
+        Raises:
+            ValueError: If user tries to review own place or already reviewed the place.
         """
-        user_id = current_user['id']
+        user_id = current_user
         user = self.user_repo.get(user_id)
         if not user:
             raise ValueError("User does not exist.")
@@ -322,6 +330,17 @@ class HBnBFacade:
         place = self.place_repo.get(review_data['place_id'])
         if not place:
             raise ValueError("Place does not exist.")
+
+        # Check if user is trying to review their own place
+        if place.owner.id == user_id:
+            raise ValueError("You cannot review your own place")
+
+        # Check if user has already reviewed this place
+        existing_reviews = self.review_repo.get_by_attribute(
+            'place_id', review_data['place_id'])
+        for existing_review in existing_reviews:
+            if existing_review.user.id == user_id:
+                raise ValueError("You have already reviewed this place")
 
         review = Review(
             text=review_data['text'],
