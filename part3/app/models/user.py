@@ -1,5 +1,5 @@
 # Importation des modules nécessaires
-from app import db, bcrypt
+from app.extensions import db, bcrypt
 import uuid
 from .base_model import BaseModel
 import re
@@ -29,7 +29,7 @@ class User(BaseModel):
     is_admin = db.Column(db.Boolean, default=False)
 
     reviews = db.relationship('Review', backref='user', lazy=True)
-    places = db.relationship('Place', backref='user', lazy=True)
+    # Note: places relationship is defined in Place model as 'owner'
 
     # Ensemble statique pour suivre les emails existants (unicité)
     existing_emails = set()
@@ -136,7 +136,6 @@ class User(BaseModel):
             password (str): The plain text password to hash.
         """
         # Génère un hash pour le mot de passe et l'attribue à l'utilisateur
-        from app import bcrypt
         self.password = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def verify_password(self, password):
@@ -150,5 +149,4 @@ class User(BaseModel):
             bool: True if password matches, False otherwise.
         """
         # Vérifie que le mot de passe fourni correspond au hash stocké
-        from app import bcrypt
         return bcrypt.check_password_hash(self.password, password)
