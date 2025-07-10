@@ -39,19 +39,26 @@ class UserList(Resource):
     @api.expect(user_model, validate=True)
     # Réponse 201 si l'utilisateur est créé avec succès
     @api.response(201, 'User successfully created')
-    # Réponse 400 si l’email est déjà utilisé ou si les données sont invalides
+    # Réponse 400 si l'email est déjà utilisé ou si les données sont invalides
     @api.response(400, 'Invalid input or email already registered')
+    @api.response(403, 'Admin privileges required')
+    @jwt_required()
     def post(self):
         """
-        Register a new user.
+        Create a new user. Only admins can create users.
 
         Validates input fields and ensures the email is not already in use.
         Creates a new User entity through the business layer and returns
         the resulting resource representation.
 
         Returns:
-            dict: Created user data with HTTP 201, or error with HTTP 400.
+            dict: Created user data with HTTP 201, or error with HTTP 400/403.
         """
+        # Vérification des privilèges admin
+        claims = get_jwt()
+        if not claims.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
         # Récupération des données utilisateur issues du corps de la requête
         user_data = api.payload
 
@@ -135,11 +142,11 @@ class UserResource(Resource):
     @api.response(200, 'User updated successfully')
     @api.response(404, 'User not found')
     @api.response(400, 'Invalid input data')
-    @api.response(403, 'Unauthorized action')
+    @api.response(403, 'Admin privileges required')
     @jwt_required()
     def put(self, user_id):
         """
-        Update an existing user's information.
+        Update an existing user's information. Only admins can modify users.
 
         Args:
             user_id (str): The ID of the user to update.
@@ -148,16 +155,24 @@ class UserResource(Resource):
             dict: Updated user data if successful.
             tuple: Error message and HTTP status code if failed.
         """
+        # Vérification des privilèges admin
+        claims = get_jwt()
+        if not claims.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
         # Récupération des données envoyées dans la requête
         user_api = api.payload
-        current_user = get_jwt_identity()
         user = facade.get_user(user_id)
 
         if not user:
             return {'error': 'User not found'}, 404
 
-        if user.id != current_user["id"] and not current_user.get("is_admin", False):
-            return {'error': 'Unauthorized action'}, 403
+        # Vérification de l'unicité de l'email si fourni
+        email = user_api.get('email')
+        if email:
+            existing_user = facade.get_user_by_email(email)
+            if existing_user and str(existing_user.id) != user_id:
+                return {'error': 'Email is already in use'}, 400
 
         try:
             # Mise à jour de l'utilisateur via la façade

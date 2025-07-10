@@ -38,7 +38,8 @@ class AdminAmenityCreate(Resource):
         """
         # Récupération de l'utilisateur actuel et vérification des droits admin
         current_user = get_jwt_identity()
-        if not current_user.get('is_admin'):
+        claims = get_jwt()
+        if not claims.get('is_admin'):
             return {'error': 'Admin privileges required'}, 403
 
         # Récupération des données envoyées dans la requête
@@ -81,7 +82,8 @@ class AdminAmenityModify(Resource):
         """
         # Récupération de l'utilisateur actuel et vérification des droits admin
         current_user = get_jwt_identity()
-        if not current_user.get('is_admin'):
+        claims = get_jwt()
+        if not claims.get('is_admin'):
             return {'error': 'Admin privileges required'}, 403
 
         # Récupération des données envoyées dans la requête

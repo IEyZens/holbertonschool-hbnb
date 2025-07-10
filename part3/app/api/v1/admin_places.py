@@ -79,10 +79,11 @@ class AdminPlaceModify(Resource):
         """
         # Récupération de l'identité de l'utilisateur courant
         current_user = get_jwt_identity()
+        claims = get_jwt()
 
         # Vérifie si l'utilisateur est admin ou propriétaire
-        is_admin = current_user.get('is_admin', False)
-        user_id = current_user.get('id')
+        is_admin = claims.get('is_admin', False)
+        user_id = current_user
 
         # Récupère le lieu à modifier
         place = facade.get_place(place_id)

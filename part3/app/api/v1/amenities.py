@@ -26,11 +26,13 @@ class AmenityList(Resource):
     @api.expect(amenity_model)
     # Réponse en cas de succès : commodité créée
     @api.response(201, 'Amenity successfully created')
-    # Réponse en cas d’échec de validation des données
+    # Réponse en cas d'échec de validation des données
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Admin privileges required')
+    @jwt_required()
     def post(self):
         """
-        Create a new amenity.
+        Create a new amenity. Only admins can create amenities.
 
         This endpoint receives a JSON payload validated against the Amenity model.
         The creation logic is delegated to the business facade layer. On success, returns the created amenity with its ID.
@@ -39,6 +41,11 @@ class AmenityList(Resource):
         Returns:
             tuple: (JSON response, HTTP status code)
         """
+        # Vérification des privilèges admin
+        claims = get_jwt()
+        if not claims.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
         # Récupération des données envoyées dans le corps de la requête
         amenity_data = api.payload
 
@@ -122,11 +129,13 @@ class AmenityResource(Resource):
     @api.response(200, 'Amenity updated successfully')
     # Réponse si la commodité à mettre à jour n'existe pas
     @api.response(404, 'Amenity not found')
-    # Réponse si les données d’entrée sont invalides
+    # Réponse si les données d'entrée sont invalides
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Admin privileges required')
+    @jwt_required()
     def put(self, amenity_id):
         """
-        Update a specific amenity.
+        Update a specific amenity. Only admins can update amenities.
 
         This endpoint accepts a JSON payload with updated data for the amenity identified by the given ID.
         If the amenity exists, it is updated and the new data is returned. If not, returns an error message with HTTP 404.
@@ -138,6 +147,11 @@ class AmenityResource(Resource):
         Returns:
             tuple: (updated amenity as JSON, HTTP status code)
         """
+        # Vérification des privilèges admin
+        claims = get_jwt()
+        if not claims.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
         # Récupération des données d'entrée fournies dans le corps de la requête
         amenity_api = api.payload
 

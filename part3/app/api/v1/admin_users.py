@@ -47,10 +47,11 @@ class AdminUserResource(Resource):
             dict: Updated user data or error details.
         """
         current_user = get_jwt_identity()
+        claims = get_jwt()
         user_api = api.payload
 
         # Vérifie si l'utilisateur courant est admin
-        if not current_user.get('is_admin'):
+        if not claims.get('is_admin'):
             return {'error': 'Admin privileges required'}, 403
 
         email = user_api.get('email')
@@ -104,8 +105,9 @@ class AdminUserCreate(Resource):
             dict: Newly created user data or error details.
         """
         current_user = get_jwt_identity()
+        claims = get_jwt()
         # Vérifie si l'utilisateur courant est admin
-        if not current_user.get('is_admin'):
+        if not claims.get('is_admin'):
             return {'error': 'Admin privileges required'}, 403
 
         user_data = api.payload

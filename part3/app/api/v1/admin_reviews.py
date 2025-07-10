@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from flask import request
 from app.services import facade
 
@@ -47,10 +47,11 @@ class AdminReviewResource(Resource):
             dict: Updated review information or error details with appropriate HTTP status.
         """
         current_user = get_jwt_identity()
+        claims = get_jwt()
 
         # Vérifie si l'utilisateur est admin ou auteur de l'avis
-        is_admin = current_user.get('is_admin', False)
-        user_id = current_user.get('id')
+        is_admin = claims.get('is_admin', False)
+        user_id = current_user
 
         # Récupère l'avis à modifier
         review = facade.get_review(review_id)
@@ -99,10 +100,11 @@ class AdminReviewResource(Resource):
             dict: Success message or error details with appropriate HTTP status.
         """
         current_user = get_jwt_identity()
+        claims = get_jwt()
 
         # Vérifie si l'utilisateur est admin ou auteur de l'avis
-        is_admin = current_user.get('is_admin', False)
-        user_id = current_user.get('id')
+        is_admin = claims.get('is_admin', False)
+        user_id = current_user
 
         # Récupère l'avis à supprimer
         review = facade.get_review(review_id)

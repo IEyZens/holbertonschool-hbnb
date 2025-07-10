@@ -1,6 +1,6 @@
 # Importation des modules nécessaires
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from app.services import facade
 
 # Création du namespace pour les opérations d'authentification
@@ -36,7 +36,8 @@ class Login(Resource):
         if user and user.verify_password(login_data['password']):
             # Création du token JWT en cas d'authentification réussie
             access_token = create_access_token(
-                identity={'id': user.id, 'is_admin': user.is_admin})
+                identity=str(user.id),
+                additional_claims={'is_admin': user.is_admin})
             return {
                 'access_token': access_token,
                 'token_type': 'Bearer',
@@ -56,5 +57,10 @@ class ProtectedResource(Resource):
         Return a greeting message for the authenticated user.
         """
         # Récupération de l'identité de l'utilisateur courant à partir du JWT
-        current_user = get_jwt_identity()
-        return {'message': f'Hello, user {current_user["id"]}'}, 200
+        current_user_id = get_jwt_identity()
+        claims = get_jwt()
+        is_admin = claims.get('is_admin', False)
+        return {
+            'message': f'Hello, user {current_user_id}',
+            'is_admin': is_admin
+        }, 200
