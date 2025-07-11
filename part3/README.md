@@ -299,6 +299,23 @@ class User(Base):
 
 ---
 
+## 🗄️ Database Setup
+
+### Initialize Database
+```bash
+# Create database tables and add default data
+python init_db.py
+```
+
+### Reset Database (if needed)
+```bash
+# Remove existing database and recreate
+rm -f instance/development.db
+python init_db.py
+```
+
+---
+
 ## 🧪 Testing
 
 ### 1. Manual (cURL)
