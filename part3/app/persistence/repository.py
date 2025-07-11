@@ -155,8 +155,12 @@ class SQLAlchemyRepository(Repository):
         self.model = model
 
     def add(self, obj):
-        db.session.add(obj)
-        db.session.commit()
+        try:
+            db.session.add(obj)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
     def get(self, obj_id):
         return self.model.query.get(obj_id)
@@ -165,26 +169,34 @@ class SQLAlchemyRepository(Repository):
         return self.model.query.all()
 
     def update(self, obj_id, data):
-        obj = self.get(obj_id)
-        if obj:
-            if isinstance(data, dict):
-                for key, value in data.items():
-                    setattr(obj, key, value)
+        try:
+            obj = self.get(obj_id)
+            if obj:
+                if isinstance(data, dict):
+                    for key, value in data.items():
+                        setattr(obj, key, value)
+                else:
+                    # Remplacement complet si data est un objet
+                    obj = data
+                db.session.commit()
+                return obj
             else:
-                # Remplacement complet si data est un objet
-                obj = data
-            db.session.commit()
-            return obj
-        else:
-            raise KeyError("Object not found")
+                raise KeyError("Object not found")
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
     def delete(self, obj_id):
-        obj = self.get(obj_id)
-        if obj:
-            db.session.delete(obj)
-            db.session.commit()
-            return True
-        return False
+        try:
+            obj = self.get(obj_id)
+            if obj:
+                db.session.delete(obj)
+                db.session.commit()
+                return True
+            return False
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
     def get_by_attribute(self, attr_name, attr_value):
         # Retourne une liste de tous les objets correspondant à l'attribut
