@@ -18,6 +18,8 @@ class Config:
     """
     # Clé secrète utilisée pour les sessions et la sécurité (JWT, cookies, etc.)
     SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')
+    # JWT utilise SECRET_KEY par défaut, mais on peut l'expliciter
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', SECRET_KEY)
     # Mode debug désactivé par défaut
     DEBUG = False
 
