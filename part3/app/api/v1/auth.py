@@ -28,22 +28,26 @@ class Login(Resource):
         Returns:
             dict: Access token and token type if credentials are valid, else error message.
         """
-        # Récupération des données de connexion envoyées par l'utilisateur
-        login_data = api.payload
-        # Recherche de l'utilisateur correspondant à l'email
-        user = facade.get_user_by_email(login_data['email'])
-        # Vérification du mot de passe
-        if user and user.verify_password(login_data['password']):
-            # Création du token JWT en cas d'authentification réussie
-            access_token = create_access_token(
-                identity=str(user.id),
-                additional_claims={'is_admin': user.is_admin})
-            return {
-                'access_token': access_token,
-                'token_type': 'Bearer',
-            }, 200
-        # Retourne une erreur si les identifiants sont invalides
-        return {'message': 'Invalid credentials'}, 401
+        try:
+            # Récupération des données de connexion envoyées par l'utilisateur
+            login_data = api.payload
+            # Recherche de l'utilisateur correspondant à l'email
+            user = facade.get_user_by_email(login_data['email'])
+            # Vérification du mot de passe
+            if user and user.verify_password(login_data['password']):
+                # Création du token JWT en cas d'authentification réussie
+                access_token = create_access_token(
+                    identity=str(user.id),
+                    additional_claims={'is_admin': user.is_admin})
+                return {
+                    'access_token': access_token,
+                    'token_type': 'Bearer',
+                }, 200
+            # Retourne une erreur si les identifiants sont invalides
+            return {'message': 'Invalid credentials'}, 401
+        except Exception as e:
+            # Gestion d'erreur générique
+            return {'error': 'Internal server error'}, 500
 
 
 @api.route('/protected')

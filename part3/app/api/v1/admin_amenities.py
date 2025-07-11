@@ -57,6 +57,10 @@ class AdminAmenityCreate(Resource):
             # Gestion d'erreur si les données sont invalides
             return {'error': str(e)}, 400
 
+        except Exception as e:
+            # Gestion générique d'exception serveur : erreur 500
+            return {'error': 'Internal server error'}, 500
+
 
 @api.route('/amenities/<amenity_id>')
 class AdminAmenityModify(Resource):
@@ -106,3 +110,7 @@ class AdminAmenityModify(Resource):
         except ValueError as e:
             # Gestion d'erreur si les données sont invalides
             return {'error': str(e)}, 400
+
+        except Exception as e:
+            # Gestion générique d'exception serveur : erreur 500
+            return {'error': 'Internal server error'}, 500

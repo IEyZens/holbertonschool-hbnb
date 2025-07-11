@@ -54,30 +54,31 @@ class UserList(Resource):
         Returns:
             dict: Created user data with HTTP 201, or error with HTTP 400/403.
         """
-        # Vérification des privilèges admin
-        claims = get_jwt()
-        if not claims.get('is_admin'):
-            return {'error': 'Admin privileges required'}, 403
-
-        # Récupération des données utilisateur issues du corps de la requête
         user_data = api.payload
 
-        # Vérifie si un utilisateur existe déjà avec le même email
-        existing_user = facade.get_user_by_email(user_data['email'])
-        if existing_user:
-            # Retourne une erreur si l'email est déjà enregistré
-            return {'error': 'Email already registered'}, 400
+        try:
+            # Vérifie si un utilisateur existe déjà avec le même email
+            existing_user = facade.get_user_by_email(user_data['email'])
+            if existing_user:
+                # Retourne une erreur si l'email est déjà enregistré
+                return {'error': 'Email already registered'}, 400
 
-        # Création d’un nouvel utilisateur via la couche de service
-        new_user = facade.create_user(user_data)
-        # Retourne les informations de l’utilisateur créé
-        return {
-            'id': new_user.id,
-            'first_name': new_user.first_name,
-            'last_name': new_user.last_name,
-            'email': new_user.email,
-            'is_admin': new_user.is_admin
-        }, 201
+            # Création d'un nouvel utilisateur via la couche de service
+            new_user = facade.create_user(user_data)
+            # Retourne les informations de l'utilisateur créé
+            return {
+                'id': new_user.id,
+                'first_name': new_user.first_name,
+                'last_name': new_user.last_name,
+                'email': new_user.email,
+                'is_admin': new_user.is_admin
+            }, 201
+        except ValueError as e:
+            # Gestion d'erreur de validation des données
+            return {'error': str(e)}, 400
+        except Exception as e:
+            # Gestion d'erreur générique
+            return {'error': 'Internal server error'}, 500
 
     @api.response(200, 'List of users retrieved successfully')
     def get(self):
@@ -124,19 +125,23 @@ class UserResource(Resource):
         Returns:
             dict: User information with HTTP 200, or error with HTTP 404.
         """
-        # Récupération de l'utilisateur via la façade en fonction de son ID
-        user = facade.get_user(user_id)
-        if not user:
-            # Retourne une erreur 404 si l'utilisateur n'est pas trouvé
-            return {'error': 'User not found'}, 404
-        # Retourne les informations de l'utilisateur trouvé
-        return {
-            'id': user.id,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'email': user.email,
-            'is_admin': user.is_admin
-        }, 200
+        try:
+            # Récupération de l'utilisateur via la façade en fonction de son ID
+            user = facade.get_user(user_id)
+            if not user:
+                # Retourne une erreur 404 si l'utilisateur n'est pas trouvé
+                return {'error': 'User not found'}, 404
+            # Retourne les informations de l'utilisateur trouvé
+            return {
+                'id': user.id,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'is_admin': user.is_admin
+            }, 200
+        except Exception as e:
+            # Gestion d'erreur générique
+            return {'error': 'Internal server error'}, 500
 
     @api.expect(user_update_model)
     @api.response(200, 'User updated successfully')

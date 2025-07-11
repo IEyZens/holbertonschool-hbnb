@@ -117,6 +117,9 @@ class PlaceList(Resource):
         except ValueError as e:
             # Retourne une erreur 400 si les données sont invalides au niveau métier
             return {'error': str(e)}, 400
+        except Exception as e:
+            # Gestion d'erreur générique
+            return {'error': 'Internal server error'}, 500
 
     # Réponse 200 si récupération réussie
     @api.response(200, 'List of places retrieved successfully')

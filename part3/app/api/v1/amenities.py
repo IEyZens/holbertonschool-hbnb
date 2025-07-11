@@ -60,6 +60,9 @@ class AmenityList(Resource):
         except ValueError as e:
             # En cas d'erreur de validation métier, retour d'une réponse 400 avec le message d'erreur
             return {'error': str(e)}, 400
+        except Exception as e:
+            # Gestion d'erreur générique
+            return {'error': 'Internal server error'}, 500
 
     # Réponse en cas de succès : liste des commodités renvoyée
     @api.response(200, 'List of amenities retrieved successfully')

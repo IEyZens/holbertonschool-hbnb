@@ -84,6 +84,10 @@ class AdminUserResource(Resource):
             # Retourne une erreur métier si les données sont invalides
             return {'error': str(e)}, 400
 
+        except Exception as e:
+            # Gestion générique d'exception serveur : erreur 500
+            return {'error': 'Internal server error'}, 500
+
 
 @api.route('/users/')
 class AdminUserCreate(Resource):
@@ -110,19 +114,28 @@ class AdminUserCreate(Resource):
         if not claims.get('is_admin'):
             return {'error': 'Admin privileges required'}, 403
 
-        user_data = api.payload
-        email = user_data.get('email')
+        try:
+            user_data = api.payload
+            email = user_data.get('email')
 
-        # Vérifie si l'email est déjà enregistré
-        if facade.get_user_by_email(email):
-            return {'error': 'Email already registered'}, 400
+            # Vérifie si l'email est déjà enregistré
+            if facade.get_user_by_email(email):
+                return {'error': 'Email already registered'}, 400
 
-        # Crée le nouvel utilisateur
-        new_user = facade.create_user(user_data)
-        return {
-            'id': new_user.id,
-            'first_name': new_user.first_name,
-            'last_name': new_user.last_name,
-            'email': new_user.email,
-            'is_admin': new_user.is_admin
-        }, 201
+            # Crée le nouvel utilisateur
+            new_user = facade.create_user(user_data)
+            return {
+                'id': new_user.id,
+                'first_name': new_user.first_name,
+                'last_name': new_user.last_name,
+                'email': new_user.email,
+                'is_admin': new_user.is_admin
+            }, 201
+
+        except ValueError as e:
+            # Retourne une erreur métier si les données sont invalides
+            return {'error': str(e)}, 400
+
+        except Exception as e:
+            # Gestion générique d'exception serveur : erreur 500
+            return {'error': 'Internal server error'}, 500

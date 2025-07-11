@@ -58,7 +58,7 @@ class ReviewList(Resource):
 
         try:
             # Récupération des données JSON issues de la requête
-            review_data = request.json
+            review_data = api.payload
 
             # Création d'un nouvel avis via la façade
             new_review = facade.create_review(review_data, current_user)
@@ -74,6 +74,9 @@ class ReviewList(Resource):
         except ValueError as e:
             # Gestion d'erreur métier si les données sont invalides
             return {'error': str(e)}, 400
+        except Exception as e:
+            # Gestion d'erreur générique
+            return {'error': 'Internal server error'}, 500
 
     # Réponse 200 si la liste des avis est récupérée avec succès
     @api.response(200, 'List of reviews retrieved successfully')
