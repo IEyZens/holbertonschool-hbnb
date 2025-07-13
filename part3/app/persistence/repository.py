@@ -169,35 +169,52 @@ class SQLAlchemyRepository(Repository):
         return self.model.query.all()
 
     def update(self, obj_id, data):
+        obj = self.get(obj_id)
+        if not obj:
+            raise KeyError("Object not found")
+
         try:
-            obj = self.get(obj_id)
-            if obj:
-                if isinstance(data, dict):
-                    for key, value in data.items():
-                        setattr(obj, key, value)
-                else:
-                    # Remplacement complet si data est un objet
-                    obj = data
-                db.session.commit()
-                return obj
-            else:
-                raise KeyError("Object not found")
+            if isinstance(data, dict):
+                for key, value in data.items():
+                    setattr(obj, key, value)
+            db.session.commit()
+            return obj
         except Exception as e:
             db.session.rollback()
             raise e
 
     def delete(self, obj_id):
-        try:
-            obj = self.get(obj_id)
-            if obj:
-                db.session.delete(obj)
-                db.session.commit()
-                return True
+        obj = self.get(obj_id)
+        if not obj:
             return False
+        try:
+            db.session.delete(obj)
+            db.session.commit()
+            return True
         except Exception as e:
             db.session.rollback()
             raise e
 
     def get_by_attribute(self, attr_name, attr_value):
-        # Retourne une liste de tous les objets correspondant à l'attribut
-        return self.model.query.filter(getattr(self.model, attr_name) == attr_value).all()
+        """
+        Return all records matching a specific attribute.
+        Always returns a list (possibly empty).
+        """
+        try:
+            attr = getattr(self.model, attr_name)
+            return self.model.query.filter(attr == attr_value).all()
+        except AttributeError:
+            raise ValueError(
+                f"{attr_name} is not a valid attribute of {self.model.__name__}")
+
+    def get_amenity_by_name(self, name):
+        """
+        Retrieve a single amenity by its name.
+
+        Args:
+            name (str): The name of the amenity.
+
+        Returns:
+            object or None: The amenity instance if found, else None.
+        """
+        return self.model.query.filter_by(name=name).first()
