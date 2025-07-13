@@ -31,8 +31,8 @@ class User(BaseModel):
     is_admin = db.Column(db.Boolean, default=False)
 
     # Relations SQLAlchemy
-    places = relationship('Place', backref='owner', lazy=True)
-    reviews = relationship('Review', backref='user', lazy=True)
+    owned_places = relationship('Place', back_populates='owner', lazy=True)
+    reviews = relationship('Review', back_populates='user', lazy=True)
 
     def __init__(self, first_name: str, last_name: str, email: str, password: str, is_admin: bool = False):
         """
@@ -70,6 +70,7 @@ class User(BaseModel):
                 "Invalid is_admin flag: must be a boolean (True or False).")
 
         # Vérifie que l'email respecte le format standard via une expression régulière
+        email = email.strip().lower()
         if not re.fullmatch(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,7}', email):
             raise ValueError("Invalid email: must be a valid email address.")
 
