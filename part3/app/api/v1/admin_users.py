@@ -30,6 +30,37 @@ class AdminUserResource(Resource):
 
     Allows an admin to update a user’s data.
     """
+    @api.response(200, 'User retrieved successfully')
+    @api.response(404, 'User not found')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
+    def get(self, user_id):
+        """
+        Retrieve a user by their ID. Only admins can view users.
+
+        Args:
+            user_id (str): The UUID of the user to retrieve.
+
+        Returns:
+            dict: User data or error message.
+        """
+        claims = get_jwt()
+        if not claims.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        try:
+            user = facade.get_user(user_id)
+        except (ValueError, KeyError):
+            return {'error': 'User not found'}, 404
+
+        return {
+            'id': user.id,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'is_admin': user.is_admin
+        }, 200
+
     @api.expect(user_update_model)
     @api.response(200, 'User updated successfully')
     @api.response(404, 'User not found')
@@ -55,17 +86,15 @@ class AdminUserResource(Resource):
             return {'error': 'Admin privileges required'}, 403
 
         email = user_api.get('email')
-
-        # Vérifie si l'email est déjà utilisé par un autre utilisateur
         if email:
+            email = email.strip().lower()  # Nettoyer l'email
             existing_user = facade.get_user_by_email(email)
             if existing_user and str(existing_user.id) != user_id:
                 return {'error': 'Email is already in use'}, 400
 
-        # Récupère l'utilisateur à mettre à jour
-        user = facade.get_user(user_id)
-
-        if not user:
+        try:
+            user = facade.get_user(user_id)
+        except (ValueError, KeyError):
             return {'error': 'User not found'}, 404
 
         try:
@@ -86,6 +115,37 @@ class AdminUserResource(Resource):
 
         except Exception as e:
             # Gestion générique d'exception serveur : erreur 500
+            return {'error': 'Internal server error'}, 500
+
+    @api.response(204, 'User deleted successfully')
+    @api.response(404, 'User not found')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
+    def delete(self, user_id):
+        """
+        Delete a user by their ID. Only admins can delete users.
+
+        Args:
+            user_id (str): The UUID of the user to delete.
+
+        Returns:
+            Empty response with 204 status or error message.
+        """
+        claims = get_jwt()
+        if not claims.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        try:
+            user = facade.get_user(user_id)
+        except (ValueError, KeyError):
+            return {'error': 'User not found'}, 404
+
+        try:
+            facade.delete_user(user_id)
+            return '', 204
+        except (ValueError, KeyError):
+            return {'error': 'User not found'}, 404
+        except Exception:
             return {'error': 'Internal server error'}, 500
 
 
@@ -117,8 +177,8 @@ class AdminUserCreate(Resource):
         try:
             user_data = api.payload
             email = user_data.get('email')
-
-            # Vérifie si l'email est déjà enregistré
+            if email:
+                email = email.strip().lower()
             if facade.get_user_by_email(email):
                 return {'error': 'Email already registered'}, 400
 
