@@ -57,10 +57,10 @@ class HBnBFacade:
         Raises:
             ValueError: If user not found.
         """
-        try:
-            return self.user_repo.get(user_id)
-        except KeyError:
+        user = self.user_repo.get(user_id)
+        if not user:
             raise ValueError("Error ID: The requested ID does not exist.")
+        return user
 
     def get_user_by_email(self, email):
         """
@@ -73,6 +73,9 @@ class HBnBFacade:
             User or None: The matching user or None if not found.
         """
         return self.user_repo.get_user_by_email(email)
+
+    def get_user_by_id(self, user_id):
+        return self.user_repo.get_user_by_id(user_id)
 
     def get_all_users(self):
         """
@@ -98,6 +101,8 @@ class HBnBFacade:
             User: The updated object.
         """
         user = self.user_repo.get(user_id)
+        if not user:
+            raise ValueError("Error ID: The requested ID does not exist.")
 
         if 'email' in data:
             email = data['email']
@@ -105,13 +110,26 @@ class HBnBFacade:
                 raise ValueError(
                     "Invalid email: must be a valid email address.")
 
-            if 'password' in data:
-                user.hash_password(data.pop('password'))
+        if 'password' in data:
+            user.hash_password(data.pop('password'))
 
-        try:
-            return self.user_repo.update(user_id, data)
-        except KeyError:
-            raise ValueError("Error ID: The requested ID does not exist.")
+        return self.user_repo.update(user_id, data)
+
+    def delete_user(self, user_id):
+        """
+        Delete a user entity from storage.
+
+        Args:
+            user_id (str): User ID.
+
+        Returns:
+            bool: True if deletion succeeded, else False.
+        """
+        user = self.user_repo.get(user_id)
+        if not user:
+            raise ValueError("User not found")
+        self.user_repo.delete(user_id)
+        return True
 
     def create_amenity(self, amenity_data):
         """
@@ -137,10 +155,13 @@ class HBnBFacade:
         Returns:
             Amenity: The matching amenity object.
         """
-        try:
-            return self.amenity_repo.get(amenity_id)
-        except KeyError:
+        amenity = self.amenity_repo.get(amenity_id)
+        if not amenity:
             raise ValueError("Error ID: The requested ID does not exist.")
+        return amenity
+
+    def get_amenity_by_name(self, name):
+        return self.amenity_repo.get_by_attribute('name', name.strip().title())
 
     def get_all_amenities(self):
         """
@@ -165,16 +186,32 @@ class HBnBFacade:
         Returns:
             Amenity: Updated amenity object.
         """
+        amenity = self.amenity_repo.get(amenity_id)
+        if not amenity:
+            raise ValueError("Error ID: The requested ID does not exist.")
 
         if 'name' in amenity_data:
             name = amenity_data['name']
             if not name or len(name) > 50:
                 raise ValueError("Name must be between 1 and 50 characters.")
 
-        try:
-            return self.amenity_repo.update(amenity_id, amenity_data)
-        except KeyError:
-            raise ValueError("Error ID: The requested ID does not exist.")
+        return self.amenity_repo.update(amenity_id, amenity_data)
+
+    def delete_amenity(self, amenity_id):
+        """
+        Delete an amenity entity from storage.
+
+        Args:
+            amenity_id (str): Amenity ID.
+
+        Returns:
+            bool: True if deletion succeeded, else False.
+        """
+        amenity = self.amenity_repo.get(amenity_id)
+        if not amenity:
+            raise ValueError("Amenity not found")
+        self.amenity_repo.delete(amenity_id)
+        return True
 
     def create_place(self, place_data, current_user):
         """
@@ -219,20 +256,27 @@ class HBnBFacade:
             price=place_data['price'],
             latitude=place_data['latitude'],
             longitude=place_data['longitude'],
+            owner=owner,  # Ajouter le paramètre owner requis
             max_person=place_data['max_person']
         )
-
-        # Set the owner relationship
-        place.owner = owner
 
         place.amenities = []
         if 'amenities' in place_data:
             amenities = []
             for amenity in place_data["amenities"]:
-                amenity_id = amenity["id"]
-                new_amenity = self.amenity_repo.get(amenity_id)
-                if new_amenity:
-                    amenities.append(new_amenity)
+                # Handle both string IDs and object format
+                if isinstance(amenity, dict):
+                    amenity_id = amenity["id"]
+                else:
+                    amenity_id = amenity
+
+                try:
+                    new_amenity = self.amenity_repo.get(amenity_id)
+                    if new_amenity:
+                        amenities.append(new_amenity)
+                except:
+                    # Skip invalid amenity IDs
+                    continue
             place.amenities = amenities
 
         self.place_repo.add(place)
@@ -248,10 +292,10 @@ class HBnBFacade:
         Returns:
             Place: The matching object.
         """
-        try:
-            return self.place_repo.get(place_id)
-        except KeyError:
+        place = self.place_repo.get(place_id)
+        if not place:
             raise ValueError("Error ID: The requested ID does not exist.")
+        return place
 
     def get_all_places(self):
         """
@@ -303,6 +347,22 @@ class HBnBFacade:
 
         self.place_repo.update(place_id, place)
         return place
+
+    def delete_place(self, place_id):
+        """
+        Delete a place entity from storage.
+
+        Args:
+            place_id (str): Place ID.
+
+        Returns:
+            bool: True if deletion succeeded, else False.
+        """
+        place = self.place_repo.get(place_id)
+        if not place:
+            raise ValueError("Place not found")
+        self.place_repo.delete(place_id)
+        return True
 
     def create_review(self, review_data, current_user):
         """
@@ -357,10 +417,10 @@ class HBnBFacade:
         Returns:
             Review: The review object.
         """
-        try:
-            return self.review_repo.get(review_id)
-        except KeyError:
+        review = self.review_repo.get(review_id)
+        if not review:
             raise ValueError("Error ID: The requested ID does not exist.")
+        return review
 
     def get_all_reviews(self):
         """
@@ -391,7 +451,7 @@ class HBnBFacade:
         """
         place = self.place_repo.get(place_id)
         if not place:
-            raise KeyError("Place not found")
+            raise ValueError("Place not found")
         return place.reviews
 
     def update_review(self, review_id, review_data):
@@ -405,14 +465,14 @@ class HBnBFacade:
         Returns:
             Review: Updated object.
         """
+        review = self.review_repo.get(review_id)
+        if not review:
+            raise ValueError("Error ID: The requested ID does not exist.")
 
         if 'rating' in review_data and not (1 <= review_data['rating'] <= 5):
             raise ValueError("Rating must be between 1 and 5.")
 
-        try:
-            return self.review_repo.update(review_id, review_data)
-        except KeyError:
-            raise ValueError("Error ID: The requested ID does not exist.")
+        return self.review_repo.update(review_id, review_data)
 
     def delete_review(self, review_id):
         """
@@ -424,7 +484,8 @@ class HBnBFacade:
         Returns:
             bool: True if deletion succeeded, else False.
         """
-        deleted = self.review_repo.delete(review_id)
-        if not deleted:
+        review = self.review_repo.get(review_id)
+        if not review:
             raise ValueError("Review not found")
+        self.review_repo.delete(review_id)
         return True
