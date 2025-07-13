@@ -17,3 +17,6 @@ class UserRepository(SQLAlchemyRepository):
             User or None: The user instance if found, else None.
         """
         return self.model.query.filter_by(email=email).first()
+
+    def get_user_by_id(self, user_id):
+        return self.model.query.get(user_id)
