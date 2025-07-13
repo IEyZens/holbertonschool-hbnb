@@ -16,8 +16,9 @@ class Amenity(BaseModel):
 
     __tablename__ = 'amenities'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(100), nullable=False)
+    id = db.Column(db.String(36), primary_key=True,
+                   default=lambda: str(uuid.uuid4()))
+    name = db.Column(db.String(50), nullable=False)
 
     def __init__(self, name: str):
         """
@@ -40,9 +41,9 @@ class Amenity(BaseModel):
             raise TypeError("String error: Your input is not a string.")
 
         # Vérifie que le nom n'est pas vide et ne dépasse pas 50 caractères
-        if not name or len(name) > 50:
+        if not name or len(name.strip()) == 0 or len(name.strip()) > 50:
             raise ValueError(
                 "Invalid Amenity: 'name' is required and must be a string with a maximum of 50 characters.")
 
         # Affectation de l'attribut name à l'objet
-        self.name = name
+        self.name = name.strip().title()
