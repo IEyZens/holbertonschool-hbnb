@@ -1,5 +1,10 @@
 # Importation des modules nécessaires
+from flask import request, current_app as app
 from flask_restx import Namespace, Resource, fields
+from app.extensions import db
+from app.models.user import User
+from app.models.place import Place
+from app.models.amenity import Amenity
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.services import facade
 
@@ -49,22 +54,21 @@ place_model = api.model('Place', {
 
 place_input_model = api.model('PlaceInput', {
     'title': fields.String(required=True, description='Title of the place'),
-    'description': fields.String(required=True, description='Description of the place'),
+    'description': fields.String(required=False, description='Description of the place'),
     'price': fields.Float(required=True, description='Price per night'),
     'latitude': fields.Float(required=True, description='Latitude of the place'),
     'longitude': fields.Float(required=True, description='Longitude of the place'),
-    'owner_id': fields.String(required=True, description='ID of the owner'),
     'max_person': fields.Integer(required=True, description='Maximum number of persons allowed'),
     'amenities': fields.List(fields.String, description='List of amenity IDs')
 })
 
 place_update_model = api.model('PlaceUpdateInput', {
-    'title': fields.String(required=True, description='Title of the place'),
-    'description': fields.String(required=True, description='Description of the place'),
-    'price': fields.Float(required=True, description='Price per night'),
-    'latitude': fields.Float(required=True, description='Latitude of the place'),
-    'longitude': fields.Float(required=True, description='Longitude of the place'),
-    'max_person': fields.Integer(required=True, description='Maximum number of persons allowed'),
+    'title': fields.String(required=False, description='Title of the place'),
+    'description': fields.String(required=False, description='Description of the place'),
+    'price': fields.Float(required=False, description='Price per night'),
+    'latitude': fields.Float(required=False, description='Latitude of the place'),
+    'longitude': fields.Float(required=False, description='Longitude of the place'),
+    'max_person': fields.Integer(required=False, description='Maximum number of persons allowed'),
     'amenities': fields.List(fields.String, description='List of amenity IDs')
 })
 
@@ -77,136 +81,138 @@ class PlaceList(Resource):
     This endpoint allows creation of new Place entities and retrieval of all existing Place records. It enforces data contract validation, and delegates business logic to the facade service layer.
     """
 
-    # Indique que la requête attend des données conformes au modèle place_model
     @api.expect(place_input_model)
-    # Réponse 201 si la création est un succès
     @api.response(201, 'Place successfully created')
-    # Réponse 400 en cas de données invalides
     @api.response(400, 'Invalid input data')
     @api.response(403, 'Unauthorized action')
     @jwt_required()
     def post(self):
-        """
-        Create a new place entity.
+        user_id = get_jwt_identity()
+        user = facade.get_user_by_id(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
 
-        Accepts a validated JSON payload describing the new place to be created. Validation includes constraints on numeric fields, coordinates, and foreign keys. Returns a concise representation of the newly created Place.
+        data = request.get_json()
+        if not data:
+            return {'error': 'Missing JSON body'}, 400
 
-        Returns:
-            dict: JSON object containing key place attributes and HTTP 201 status, or HTTP 400 with error details.
-        """
-        # Extraction des données envoyées dans la requête
-        place_data = api.payload
-        current_user = get_jwt_identity()
+        amenity_names = data.get("amenities", [])
+
+        # Validation des noms d'amenities
+        for name in amenity_names:
+            if not isinstance(name, str) or not name.strip():
+                return {'error': f'Invalid amenity name: {name}'}, 400
 
         try:
-            # Appel à la façade pour créer un nouveau lieu
-            new_place = facade.create_place(place_data, current_user)
+            # Préparer les données pour la facade
+            place_data = {
+                'title': data.get("title"),
+                'description': data.get("description"),
+                'price': data.get("price"),
+                'latitude': data.get("latitude"),
+                'longitude': data.get("longitude"),
+                'max_person': data.get("max_person")
+            }
 
-            # Retourne les données essentielles du lieu nouvellement créé
-            return {
-                'id': new_place.id,
-                'title': new_place.title,
-                'description': new_place.description,
-                'price': new_place.price,
-                'latitude': new_place.latitude,
-                'longitude': new_place.longitude,
-                'owner_id': new_place.owner.id,
-                'max_person': new_place.max_person,
-                'amenities': [amenity.name for amenity in new_place.amenities]
-            }, 201
+            # Récupérer ou créer les amenities et obtenir leurs IDs
+            amenity_ids = []
+            for name in amenity_names:
+                name = name.strip()
+                amenity_list = facade.get_amenity_by_name(name)
+
+                if amenity_list and len(amenity_list) > 0:
+                    amenity = amenity_list[0]
+                else:
+                    # Créer un nouvel amenity si il n'existe pas
+                    amenity = facade.create_amenity({'name': name})
+
+                amenity_ids.append(amenity.id)
+
+            # Ajouter les IDs des amenities aux données de la place
+            if amenity_ids:
+                place_data['amenities'] = amenity_ids
+
+            # Utiliser la facade pour créer la place
+            new_place = facade.create_place(place_data, user_id)
         except ValueError as e:
-            # Retourne une erreur 400 si les données sont invalides au niveau métier
             return {'error': str(e)}, 400
         except Exception as e:
-            # Gestion d'erreur générique
-            return {'error': 'Internal server error'}, 500
+            app.logger.error(f"Error creating place: {e}")
+            db.session.rollback()  # Annuler la transaction en cas d'erreur
+            return {'error': 'Failed to create Place'}, 500
 
-    # Réponse 200 si récupération réussie
+        return {
+            'id': new_place.id,
+            'title': new_place.title,
+            'description': new_place.description,
+            'price': new_place.price,
+            'latitude': new_place.latitude,
+            'longitude': new_place.longitude,
+            'max_person': new_place.max_person,
+            'amenities': [a.name for a in new_place.amenities] if new_place.amenities else [],
+            'owner_id': new_place.owner_id
+        }, 201
+
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
         """
-        Retrieve a list of all places.
+        Retrieve all places.
 
-        This method returns all Place entities currently registered in memory. Each record contains the core metadata required for public display.
-
-        Returns:
-            list: A list of place objects with HTTP 200 status.
-        """
-        # Récupère tous les lieux depuis la façade
-        places = facade.get_all_places()
-
-        # Retourne une liste de lieux sous forme de dictionnaires
-        return [
-            {
-                'id': p.id,
-                'title': p.title,
-                'description': p.description,
-                'price': p.price,
-                'latitude': p.latitude,
-                'longitude': p.longitude,
-                'owner_id': p.owner.id,
-                'max_person': p.max_person,
-            }
-            for p in places
-        ], 200
-
-
-@api.route('/<place_id>')
-class PlaceResource(Resource):
-    """
-    Resource class that manages data for a single Place instance.
-
-    This endpoint supports retrieval and update operations for a specific Place entity identified by a UUID. Payloads and identifiers are validated to ensure consistency and correct linkage to nested resources.
-    """
-
-    # Réponse 200 si les détails du lieu sont trouvés
-    @api.response(200, 'Place details retrieved successfully')
-    # Réponse 404 si aucun lieu ne correspond à l’ID
-    @api.response(404, 'Place not found')
-    def get(self, place_id):
-        """
-        Retrieve the details of a specific place.
-
-        Args:
-            place_id (str): The UUID of the place resource.
+        Returns a list of all places with their basic information including
+        owner details and amenities.
 
         Returns:
-            dict: JSON-formatted place details with nested user and amenities data, or HTTP 404 if not found.
+            list: List of place objects with metadata
         """
         try:
-            # Récupération du lieu ciblé par son ID
-            place = facade.get_place(place_id)
-            if not place:
-                # Retourne 404 si le lieu est introuvable
-                return {'error': 'Place not found'}, 404
-
-            # Retourne les détails complets du lieu
-            return {
+            places = facade.get_all_places()
+            return [{
                 'id': place.id,
                 'title': place.title,
                 'description': place.description,
                 'price': place.price,
                 'latitude': place.latitude,
                 'longitude': place.longitude,
-                'owner_id': place.owner.id,
+                'max_person': place.max_person,
+                'owner_id': place.owner_id,
                 'owner': {
                     'id': place.owner.id,
                     'first_name': place.owner.first_name,
                     'last_name': place.owner.last_name,
                     'email': place.owner.email
-                },
-                'max_person': place.max_person,
+                } if place.owner else None,
                 'amenities': [
                     {
                         'id': amenity.id,
                         'name': amenity.name
-                    }
-                    for amenity in place.amenities
-                ]
-            }, 200
-        except ValueError:
-            # Gestion d’erreur métier générique : retourne 404
+                    } for amenity in place.amenities
+                ] if place.amenities else [],
+                'created_at': place.created_at.isoformat() if hasattr(place, 'created_at') and place.created_at else None,
+                'updated_at': place.updated_at.isoformat() if hasattr(place, 'updated_at') and place.updated_at else None
+            } for place in places], 200
+        except Exception as e:
+            app.logger.error(f"Error retrieving places: {e}")
+            return {'error': 'Failed to retrieve places'}, 500
+
+
+@api.route('/<place_id>')
+class PlaceResource(Resource):
+    @api.response(200, 'Place retrieved successfully')
+    @api.response(404, 'Place not found')
+    def get(self, place_id):
+        place = facade.get_place(place_id)
+        if not place:
             return {'error': 'Place not found'}, 404
+        return {
+            'id': place.id,
+            'title': place.title,
+            'description': place.description,
+            'price': place.price,
+            'latitude': place.latitude,
+            'longitude': place.longitude,
+            'owner_id': place.owner.id,
+            'max_person': place.max_person
+        }, 200
 
     # Indique que la requête attend des données conformes au modèle place_model
     @api.expect(place_update_model)
@@ -219,55 +225,92 @@ class PlaceResource(Resource):
     @api.response(400, 'Invalid input data')
     @jwt_required()
     def put(self, place_id):
-        """
-        Update an existing place entity.
-
-        Accepts a payload that may partially or fully replace the place's attributes. Performs validation on updated values (e.g., price, coordinates) and updates the repository.
-
-        Args:
-            place_id (str): The UUID of the place to update.
-
-        Returns:
-            dict: Updated place details with HTTP 200, or HTTP 400/404 with error information.
-        """
-        # Données mises à jour provenant du client
-        place_api = api.payload
+        place_data = request.get_json()
         current_user = get_jwt_identity()
         claims = get_jwt()
-        place = facade.get_place(place_id)
 
-        if not place:
+        if not place_data:
+            return {'error': 'Missing JSON body'}, 400
+
+        try:
+            place = facade.get_place(place_id)
+        except ValueError:
             return {'error': 'Place not found'}, 404
 
-        # Admins can bypass ownership restrictions
+        is_admin = claims.get('is_admin', False)
+        if not is_admin and place.owner.id != current_user:
+            return {'error': 'Unauthorized action'}, 403
+
+        # Interdiction de modifier owner_id
+        if 'owner_id' in place_data:
+            return {'error': 'You cannot modify owner_id'}, 400
+
+        # Traitement spécial pour les amenities si présentes
+        if 'amenities' in place_data:
+            amenity_names = place_data.get('amenities', [])
+
+            # Validation des noms d'amenities
+            for name in amenity_names:
+                if not isinstance(name, str) or not name.strip():
+                    return {'error': f'Invalid amenity name: {name}'}, 400
+
+            # Récupérer ou créer les amenities et obtenir leurs IDs
+            amenity_ids = []
+            for name in amenity_names:
+                name = name.strip()
+                amenity_list = facade.get_amenity_by_name(name)
+
+                if amenity_list and len(amenity_list) > 0:
+                    amenity = amenity_list[0]
+                else:
+                    # Créer un nouvel amenity si il n'existe pas
+                    amenity = facade.create_amenity({'name': name})
+
+                # Format attendu par la facade
+                amenity_ids.append({'id': amenity.id})
+
+            # Remplacer les noms par les objets avec IDs
+            place_data['amenities'] = amenity_ids
+
+        try:
+            updated_place = facade.update_place(place_id, place_data)
+            return {
+                'id': updated_place.id,
+                'title': updated_place.title,
+                'description': updated_place.description,
+                'price': updated_place.price,
+                'latitude': updated_place.latitude,
+                'longitude': updated_place.longitude,
+                'owner_id': updated_place.owner.id,
+                'max_person': updated_place.max_person,
+                'amenities': [{'id': a.id, 'name': a.name} for a in updated_place.amenities]
+            }, 200
+        except ValueError as e:
+            return {'error': str(e)}, 400
+        except Exception as e:
+            return {'error': 'Internal server error', 'details': str(e)}, 500
+
+    @api.response(204, 'Place deleted successfully')
+    @api.response(403, 'Unauthorized action')
+    @api.response(404, 'Place not found')
+    @jwt_required()
+    def delete(self, place_id):
+        current_user = get_jwt_identity()
+        claims = get_jwt()
+
+        try:
+            place = facade.get_place(place_id)
+        except ValueError:
+            return {'error': 'Place not found'}, 404
+
         is_admin = claims.get('is_admin', False)
         if not is_admin and place.owner.id != current_user:
             return {'error': 'Unauthorized action'}, 403
 
         try:
-
-            # Appel à la façade pour mettre à jour un lieu
-            place_data = facade.update_place(place_id, place_api)
-
-            if not place_data:
-                # Retourne 404 si le lieu n’est pas trouvé
-                return {'error': 'Place not found'}, 404
-
-            # Retourne les nouvelles données du lieu mis à jour
-            return {
-                'id': place_data.id,
-                'title': place_data.title,
-                'description': place_data.description,
-                'price': place_data.price,
-                'latitude': place_data.latitude,
-                'longitude': place_data.longitude,
-                'owner_id': place_data.owner.id,
-                'max_person': place_data.max_person,
-                'amenities': [amenity.name for amenity in place_data.amenities]
-            }, 200
+            facade.delete_place(place_id)
+            return '', 204
         except ValueError as e:
-            # Retourne une erreur métier si les données sont invalides
             return {'error': str(e)}, 400
         except Exception as e:
-            # Gestion générique d’exception serveur : erreur 500
             return {'error': 'Internal server error', 'details': str(e)}, 500
