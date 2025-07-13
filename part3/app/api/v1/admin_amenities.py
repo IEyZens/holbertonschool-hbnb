@@ -64,53 +64,65 @@ class AdminAmenityCreate(Resource):
 
 @api.route('/amenities/<amenity_id>')
 class AdminAmenityModify(Resource):
-    """
-    Resource for admin amenity modification.
 
-    Allows an admin user to update an existing amenity.
-    """
-    @api.expect(amenity_model)
+    @api.response(200, 'Amenity retrieved successfully')
+    @api.response(404, 'Amenity not found')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
+    def get(self, amenity_id):
+        claims = get_jwt()
+        if not claims.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+        try:
+            amenity = facade.get_amenity(amenity_id)
+        except (ValueError, KeyError):
+            return {'error': 'Amenity not found'}, 404
+        return {
+            'id': amenity.id,
+            'name': amenity.name
+        }, 200
+
+    @api.expect(amenity_model, validate=True)
     @api.response(200, 'Amenity updated successfully')
     @api.response(404, 'Amenity not found')
     @api.response(400, 'Invalid input data')
     @api.response(403, 'Unauthorized action')
     @jwt_required()
     def put(self, amenity_id):
-        """
-        Update an amenity as an admin.
-
-        Only admins can update amenities. This method validates admin rights, input data, and updates an amenity if it exists.
-
-        Returns:
-            dict: Updated amenity data or error message.
-        """
-        # Récupération de l'utilisateur actuel et vérification des droits admin
-        current_user = get_jwt_identity()
         claims = get_jwt()
         if not claims.get('is_admin'):
             return {'error': 'Admin privileges required'}, 403
 
-        # Récupération des données envoyées dans la requête
         amenity_api = api.payload
-
         try:
-            # Mise à jour de la commodité via la façade
             amenity_data = facade.update_amenity(amenity_id, amenity_api)
-
             if not amenity_data:
-                # Retourne une erreur si la commodité n'a pas été trouvée
                 return {'error': 'Amenity not found'}, 404
-
-            # Retourne la commodité mise à jour
             return {
                 'id': amenity_data.id,
                 'name': amenity_data.name
             }, 200
-
         except ValueError as e:
-            # Gestion d'erreur si les données sont invalides
             return {'error': str(e)}, 400
+        except (ValueError, KeyError):
+            return {'error': 'Amenity not found'}, 404
 
-        except Exception as e:
-            # Gestion générique d'exception serveur : erreur 500
+    @api.response(204, 'Amenity deleted successfully')
+    @api.response(404, 'Amenity not found')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
+    def delete(self, amenity_id):
+        claims = get_jwt()
+        if not claims.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        try:
+            amenity = facade.get_amenity(amenity_id)
+        except (ValueError, KeyError):
+            return {'error': 'Amenity not found'}, 404
+
+        try:
+            facade.delete_amenity(amenity_id)
+            return '', 204
+        except Exception:
             return {'error': 'Internal server error'}, 500
