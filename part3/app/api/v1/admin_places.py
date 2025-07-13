@@ -58,6 +58,53 @@ class AdminPlaceModify(Resource):
 
     This endpoint allows an admin or owner to update a place's details. Enforces authentication, authorization, and correct data contract for update operations.
     """
+    @api.response(200, 'Place retrieved successfully')
+    @api.response(404, 'Place not found')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
+    def get(self, place_id):
+        """
+        Retrieve a place by its ID. Only admins or the owner can view.
+
+        Args:
+            place_id (str): The UUID of the place to retrieve.
+
+        Returns:
+            dict: Place data or error message.
+        """
+        current_user = get_jwt_identity()
+        claims = get_jwt()
+        is_admin = claims.get('is_admin', False)
+        user_id = current_user
+
+        try:
+            place = facade.get_place(place_id)
+        except (ValueError, KeyError):
+            return {'error': 'Place not found'}, 404
+
+        if not is_admin and place.owner.id != user_id:
+            return {'error': 'Unauthorized action'}, 403
+
+        return {
+            'id': place.id,
+            'title': place.title,
+            'description': place.description,
+            'price': place.price,
+            'latitude': place.latitude,
+            'longitude': place.longitude,
+            'owner_id': place.owner.id,
+            'max_person': place.max_person,
+            'owner': {
+                'id': place.owner.id,
+                'first_name': place.owner.first_name,
+                'last_name': place.owner.last_name,
+                'email': place.owner.email
+            },
+            'amenities': [
+                {'id': a.id, 'name': a.name} for a in place.amenities
+            ]
+        }, 200
+
     @api.expect(place_update_model)
     # Réponse 200 si mise à jour réussie
     @api.response(200, 'Place updated successfully')
@@ -85,10 +132,9 @@ class AdminPlaceModify(Resource):
         is_admin = claims.get('is_admin', False)
         user_id = current_user
 
-        # Récupère le lieu à modifier
-        place = facade.get_place(place_id)
-
-        if not place:
+        try:
+            place = facade.get_place(place_id)
+        except (ValueError, KeyError):
             return {'error': 'Place not found'}, 404
 
         if not is_admin and place.owner.id != user_id:
@@ -118,3 +164,36 @@ class AdminPlaceModify(Resource):
         except Exception as e:
             # Gestion générique d’exception serveur : erreur 500
             return {'error': 'Internal server error', 'details': str(e)}, 500
+
+    @api.response(204, 'Place deleted successfully')
+    @api.response(404, 'Place not found')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
+    def delete(self, place_id):
+        """
+        Delete a place by its ID. Only admins or the owner can delete.
+
+        Args:
+            place_id (str): The UUID of the place to delete.
+
+        Returns:
+            Empty response with 204 status or error message.
+        """
+        current_user = get_jwt_identity()
+        claims = get_jwt()
+        is_admin = claims.get('is_admin', False)
+        user_id = current_user
+
+        try:
+            place = facade.get_place(place_id)
+        except (ValueError, KeyError):
+            return {'error': 'Place not found'}, 404
+
+        if not is_admin and place.owner.id != user_id:
+            return {'error': 'Unauthorized action'}, 403
+
+        try:
+            facade.delete_place(place_id)
+            return '', 204
+        except Exception:
+            return {'error': 'Internal server error'}, 500
