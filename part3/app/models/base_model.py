@@ -31,6 +31,7 @@ class BaseModel(db.Model):
         """
         # Met à jour le timestamp pour refléter la dernière modification
         self.updated_at = datetime.utcnow()
+        db.session.add(self)
 
     def update(self, data):
         """
@@ -49,3 +50,4 @@ class BaseModel(db.Model):
                 setattr(self, key, value)
         # Rafraîchit le timestamp de mise à jour
         self.save()
+        db.session.commit()
