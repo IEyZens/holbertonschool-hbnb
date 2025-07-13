@@ -9,11 +9,13 @@ from .base_model import BaseModel
 # Association table for Place-Amenity many-to-many relationship
 # This intermediate table links places with their available amenities
 place_amenity = db.Table('place_amenity',
-    # Foreign key to places table
-    db.Column('place_id', db.String(36), db.ForeignKey('places.id'), primary_key=True),
-    # Foreign key to amenities table  
-    db.Column('amenity_id', db.String(36), db.ForeignKey('amenities.id'), primary_key=True)
-)
+                         # Foreign key to places table
+                         db.Column('place_id', db.String(36), db.ForeignKey(
+                             'places.id'), primary_key=True),
+                         # Foreign key to amenities table
+                         db.Column('amenity_id', db.String(36), db.ForeignKey(
+                             'amenities.id'), primary_key=True)
+                         )
 
 
 class Place(BaseModel):
@@ -21,7 +23,7 @@ class Place(BaseModel):
     Entity representing a rental property or accommodation on the HBnB platform.
 
     This model encapsulates all the essential information about a place that can be rented,
-    including location data, pricing, capacity, and associated amenities. It enforces 
+    including location data, pricing, capacity, and associated amenities. It enforces
     comprehensive validation rules for data integrity and maintains relationships with
     users (owners), reviews, and amenities.
 
@@ -34,20 +36,20 @@ class Place(BaseModel):
         description (str): Detailed description of the place (optional, maximum 500 characters)
         price (float): Price per night for renting this place (must be >= 0)
         latitude (float): Geographic latitude coordinate (-90 to 90 degrees)
-        longitude (float): Geographic longitude coordinate (-180 to 180 degrees)  
+        longitude (float): Geographic longitude coordinate (-180 to 180 degrees)
         max_person (int): Maximum number of guests allowed (optional, must be positive)
         owner_id (str): Foreign key referencing the User who owns this place
         created_at (datetime): Place creation timestamp (inherited from BaseModel)
         updated_at (datetime): Last modification timestamp (inherited from BaseModel)
-        
+
     Database Table:
         places: Stores place/property information with geographic and pricing data
-        
+
     Relationships:
         owner: Many-to-one relationship with User model (the place owner)
         reviews: One-to-many relationship with Review model (reviews for this place)
         amenities: Many-to-many relationship with Amenity model (available features)
-        
+
     Validation Rules:
         - Title must be non-empty and within 100 character limit
         - Price must be non-negative (free places allowed)
@@ -62,25 +64,26 @@ class Place(BaseModel):
     # Primary key: UUID string identifier
     id = db.Column(db.String(36), primary_key=True,
                    default=lambda: str(uuid.uuid4()))
-    
+
     # Place title: required, maximum 100 characters
     title = db.Column(db.String(100), nullable=False)
-    
+
     # Place description: optional, maximum 500 characters
     description = db.Column(db.String(500), nullable=True)
-    
+
     # Price per night: required, must be non-negative
     price = db.Column(db.Float, nullable=False)
-    
+
     # Geographic coordinates: required for location mapping
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
-    
+
     # Maximum occupancy: optional, must be positive if specified
     max_person = db.Column(db.Integer, nullable=True)
 
     # Foreign key to users table for place ownership
-    owner_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    owner_id = db.Column(db.String(36), db.ForeignKey(
+        'users.id'), nullable=False)
 
     # SQLAlchemy relationship definitions
     # Many-to-one: Each place has one owner, user can own multiple places
@@ -88,10 +91,10 @@ class Place(BaseModel):
 
     # One-to-many: Place can have multiple reviews
     reviews = relationship('Review', back_populates='place', lazy=True)
-    
+
     # Many-to-many: Place can have multiple amenities, amenities can be in multiple places
     amenities = relationship('Amenity', secondary=place_amenity,
-                           lazy='subquery', backref=db.backref('places', lazy=True))
+                             lazy='subquery', backref=db.backref('places', lazy=True))
 
     def __init__(self, title, description, price, latitude, longitude, owner, max_person=None):
         """
@@ -112,7 +115,7 @@ class Place(BaseModel):
 
         Raises:
             ValueError: For invalid title, price, coordinates, or max_person values
-            
+
         Example:
             place = Place(
                 title="Cozy Downtown Apartment",
@@ -123,7 +126,7 @@ class Place(BaseModel):
                 owner=user_instance,
                 max_person=4
             )
-            
+
         Geographic Notes:
             - Latitude: -90 (South Pole) to +90 (North Pole)
             - Longitude: -180 (International Date Line West) to +180 (East)
@@ -136,20 +139,20 @@ class Place(BaseModel):
         if not title or len(title) > 100:
             raise ValueError(
                 "Invalid title: must be a non-empty string up to 100 characters.")
-        
+
         # Validate price: must be non-negative (free rentals allowed)
         if price < 0:
             raise ValueError("Invalid price: must be >= 0.")
-        
+
         # Validate latitude: must be within valid geographic range
         if latitude < -90 or latitude > 90:
             raise ValueError("Invalid latitude: must be between -90 and 90.")
-        
+
         # Validate longitude: must be within valid geographic range
         if longitude < -180 or longitude > 180:
             raise ValueError(
                 "Invalid longitude: must be between -180 and 180.")
-        
+
         # Validate max_person if provided: must be positive integer
         if max_person is not None:
             if not isinstance(max_person, int) or max_person < 1:

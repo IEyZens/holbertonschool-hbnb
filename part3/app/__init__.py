@@ -102,10 +102,10 @@ def create_app(config_class="config.DevelopmentConfig"):
     Example:
         # Create development app
         app = create_app()
-        
+
         # Create testing app
         test_app = create_app("config.TestingConfig")
-        
+
         # Create production app
         prod_app = create_app("config.ProductionConfig")
 
@@ -123,7 +123,7 @@ def create_app(config_class="config.DevelopmentConfig"):
     """
     # Initialize Flask application instance
     app = Flask(__name__)
-    
+
     # Load configuration from the specified config class
     # This allows environment-specific settings (database URLs, secrets, etc.)
     app.config.from_object(config_class)
@@ -152,39 +152,39 @@ def create_app(config_class="config.DevelopmentConfig"):
     # Initialize Flask extensions with the application instance
     # bcrypt: Secure password hashing for user authentication
     bcrypt.init_app(app)
-    
+
     # JWT: JSON Web Token handling for stateless authentication
     jwt.init_app(app)
-    
+
     # SQLAlchemy: Database ORM for data persistence and relationships
     db.init_app(app)
 
     # Register API namespaces for user-facing endpoints
     # Users namespace: Registration, profile management, authentication
     api.add_namespace(users_ns, path='/api/v1/users')
-    
+
     # Places namespace: Property listings, search, and basic management
     api.add_namespace(places_ns, path="/api/v1/places")
-    
+
     # Amenities namespace: Feature listings and basic operations
     api.add_namespace(amenities_ns, path="/api/v1/amenities")
-    
+
     # Reviews namespace: User feedback and rating operations
     api.add_namespace(reviews_ns, path="/api/v1/reviews")
-    
+
     # Authentication namespace: Login, token management, protected resource testing
     api.add_namespace(auth_ns, path="/api/v1/auth")
 
     # Register API namespaces for administrative endpoints
     # Admin Users namespace: User management, role assignment, account administration
     api.add_namespace(admin_users_ns, path='/api/v1/admin/users')
-    
+
     # Admin Places namespace: Property management, owner verification, place administration
     api.add_namespace(admin_places_ns, path="/api/v1/admin/places")
-    
+
     # Admin Amenities namespace: Feature management, system-wide amenity operations
     api.add_namespace(admin_amenities_ns, path="/api/v1/admin/amenities")
-    
+
     # Admin Reviews namespace: Review moderation, content management, user feedback oversight
     api.add_namespace(admin_reviews_ns, path="/api/v1/admin/reviews")
 

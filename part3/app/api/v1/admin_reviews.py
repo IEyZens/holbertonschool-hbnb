@@ -30,16 +30,16 @@ class AdminReviewResource(Resource):
     This class provides endpoints for administrators and review authors to manage individual reviews
     including retrieving, updating, and deleting review entries. Access control ensures only
     admins or the review author can modify review data.
-    
+
     Attributes:
         None
-        
+
     Methods:
         get(review_id): Retrieve specific review by ID (admin or author)
         put(review_id): Update specific review (admin or author)
         delete(review_id): Delete specific review (admin or author)
     """
-    
+
     @api.response(200, 'Review retrieved successfully')
     @api.response(404, 'Review not found')
     @api.response(403, 'Unauthorized action')
@@ -50,18 +50,18 @@ class AdminReviewResource(Resource):
 
         This endpoint allows authorized users (admins or review authors) to retrieve detailed
         information about a specific review including associated user and place information.
-        
+
         Args:
             review_id (str): The UUID of the review to retrieve
-            
+
         Headers Required:
             Authorization: Bearer <jwt_token>
-            
+
         Returns:
             dict: Review data with user and place IDs (200),
                   or error message for unauthorized access (403),
                   or review not found (404)
-                  
+
         Example Success Response:
             {
                 "id": "12345",
@@ -70,7 +70,7 @@ class AdminReviewResource(Resource):
                 "user_id": "67890",
                 "place_id": "54321"
             }
-            
+
         Example Error Response:
             {
                 "error": "Unauthorized action"
@@ -79,7 +79,7 @@ class AdminReviewResource(Resource):
         # Get current user identity and claims from JWT token
         current_user = get_jwt_identity()
         claims = get_jwt()
-        
+
         # Extract admin status and user ID for authorization
         is_admin = claims.get('is_admin', False)
         user_id = current_user
@@ -87,7 +87,7 @@ class AdminReviewResource(Resource):
         try:
             # Retrieve review from facade using provided ID
             review = facade.get_review(review_id)
-            
+
         except (ValueError, KeyError):
             # Handle case where review doesn't exist
             return {'error': 'Review not found'}, 404
@@ -117,24 +117,24 @@ class AdminReviewResource(Resource):
 
         This endpoint allows authorized users to modify review content including text and rating.
         Business rules and validation are enforced through the facade layer.
-        
+
         Args:
             review_id (str): The UUID of the review to update
-            
+
         Expected Input:
             - text (str, optional): Updated review text
             - rating (int, optional): Updated rating (1-5)
-            
+
         Headers Required:
             Authorization: Bearer <jwt_token>
-            
+
         Returns:
             dict: Updated review data (200),
                   or error message for invalid input (400),
                   or unauthorized access (403),
                   or review not found (404),
                   or internal server error (500)
-                  
+
         Example Success Response:
             {
                 "id": "12345",
@@ -143,7 +143,7 @@ class AdminReviewResource(Resource):
                 "place_id": "54321",
                 "user_id": "67890"
             }
-            
+
         Example Error Response:
             {
                 "error": "Invalid input data"
@@ -160,7 +160,7 @@ class AdminReviewResource(Resource):
         try:
             # Verify review exists before attempting update
             review = facade.get_review(review_id)
-            
+
         except (ValueError, KeyError):
             # Handle case where review doesn't exist
             return {'error': 'Review not found'}, 404
@@ -188,7 +188,7 @@ class AdminReviewResource(Resource):
         except ValueError as e:
             # Handle business validation errors with specific error message
             return {'error': str(e)}, 400
-            
+
         except Exception as e:
             # Handle unexpected errors with detailed error information
             return {'error': 'Internal server error', 'details': str(e)}, 500
@@ -203,25 +203,25 @@ class AdminReviewResource(Resource):
 
         This endpoint allows authorized users to permanently remove a review from the system.
         The deletion behavior depends on business rules implemented in the facade layer.
-        
+
         Args:
             review_id (str): The UUID of the review to delete
-            
+
         Headers Required:
             Authorization: Bearer <jwt_token>
-            
+
         Returns:
             dict: Success message (200),
             or error message for invalid input (400),
             or unauthorized access (403),
             or review not found (404),
             or internal server error (500)
-            
+
         Example Success Response:
             {
                 "message": "Review successfully deleted"
             }
-            
+
         Example Error Response:
             {
                 "error": "Review not found"
@@ -238,7 +238,7 @@ class AdminReviewResource(Resource):
         try:
             # Verify review exists before attempting deletion
             review = facade.get_review(review_id)
-            
+
         except (ValueError, KeyError):
             # Handle case where review doesn't exist
             return {'error': 'Review not found'}, 404
@@ -260,7 +260,7 @@ class AdminReviewResource(Resource):
         except ValueError as e:
             # Handle business validation errors with specific error message
             return {'error': str(e)}, 400
-            
+
         except Exception as e:
             # Handle unexpected errors with detailed error information
             return {'error': 'Internal server error', 'details': str(e)}, 500

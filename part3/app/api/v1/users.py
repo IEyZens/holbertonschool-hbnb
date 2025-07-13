@@ -30,11 +30,11 @@ user_update_model = api.model('UserUpdate', {
 class UserList(Resource):
     """
     REST API Resource for handling collection-level operations on User entities.
-    
+
     This class provides endpoints for:
     - Creating new users (POST)
     - Retrieving all users (GET)
-    
+
     User creation includes email validation and duplicate checking.
     User listing excludes sensitive information like passwords.
     """
@@ -45,28 +45,28 @@ class UserList(Resource):
     def post(self):
         """
         Create a new user account.
-        
+
         This endpoint creates a new user with the provided information.
         It validates that the email is not already registered in the system
         and ensures all required fields are provided.
-        
+
         Returns:
             dict: Created user data (excluding password) with status 201,
                   or error message with status 400
         """
         # Extract user data from request payload
         user_data = api.payload
-        
+
         # Get email from user data for duplicate validation
         email = user_data.get('email')
-        
+
         # Check if email is already registered in the system
         if facade.get_user_by_email(email):
             return {'error': 'Email already registered'}, 400
-        
+
         # Create new user using facade layer
         new_user = facade.create_user(user_data)
-        
+
         # Return user data excluding sensitive information (password)
         return {
             'id': new_user.id,
@@ -79,17 +79,17 @@ class UserList(Resource):
     def get(self):
         """
         Retrieve all users from the database.
-        
+
         Returns a list of all registered users with their basic information.
         Sensitive information like passwords and admin status are excluded
         from the response for security purposes.
-        
+
         Returns:
             list: List of user dictionaries with basic information
         """
         # Retrieve all users from database via facade
         users = facade.get_all_users()
-        
+
         # Build response list excluding sensitive information
         return [{
             'id': u.id,
@@ -103,12 +103,12 @@ class UserList(Resource):
 class UserResource(Resource):
     """
     REST API Resource for handling individual User entity operations.
-    
+
     This class provides endpoints for:
     - Retrieving a specific user (GET)
     - Updating user information (PUT)
     - Deleting a user account (DELETE)
-    
+
     All modification operations include proper authentication and authorization
     checks to ensure users can only modify their own data (unless admin).
     """
@@ -118,23 +118,23 @@ class UserResource(Resource):
     def get(self, user_id):
         """
         Retrieve a specific user by their ID.
-        
+
         Returns basic user information excluding sensitive data like passwords.
         This endpoint is publicly accessible for displaying user profiles.
-        
+
         Args:
             user_id (str): Unique identifier of the user
-            
+
         Returns:
             dict: User data or error message with appropriate status
         """
         # Retrieve user from database using facade
         user = facade.get_user(user_id)
-        
+
         # Check if user exists
         if not user:
             return {'error': 'User not found'}, 404
-            
+
         # Return user data excluding sensitive information
         return {
             'id': user.id,
@@ -152,20 +152,20 @@ class UserResource(Resource):
     def put(self, user_id):
         """
         Update an existing user's information.
-        
+
         Users can only modify their own profile data. Email and password
         modifications are restricted for security reasons and must be handled
         through separate dedicated endpoints.
-        
+
         Args:
             user_id (str): Unique identifier of the user to update
-            
+
         Returns:
             dict: Updated user data or error message with appropriate status
         """
         # Extract current user ID from JWT token
         current_user = get_jwt_identity()
-        
+
         # Verify user is authorized to modify this account
         if current_user != user_id:
             return {'error': 'Unauthorized action'}, 403
@@ -204,13 +204,13 @@ class UserResource(Resource):
     def delete(self, user_id):
         """
         Delete a user account.
-        
+
         Users can delete their own account, and admin users can delete any account.
         This operation is irreversible and will remove all associated data.
-        
+
         Args:
             user_id (str): Unique identifier of the user to delete
-            
+
         Returns:
             Empty response with status 204 on success, or error message
         """
@@ -225,10 +225,10 @@ class UserResource(Resource):
         try:
             # Delete user account using facade layer
             facade.delete_user(user_id)
-            
+
             # Return empty response with success status
             return '', 204
-            
+
         except ValueError:
             # Handle case where user doesn't exist
             return {'error': 'User not found'}, 404

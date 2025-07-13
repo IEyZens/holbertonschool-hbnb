@@ -12,16 +12,16 @@ class Repository(ABC):
     This class establishes a standardized interface for data persistence operations following
     the Repository pattern. Any concrete subclass must implement methods for standard
     CRUD operations and attribute-based filtering on domain entities.
-    
+
     The Repository pattern provides a uniform interface for accessing data, abstracting
     the underlying storage mechanism (in-memory, database, file system, etc.) from the
     business logic layer.
-    
+
     All implementing classes must provide:
     - Basic CRUD operations (Create, Read, Update, Delete)
     - Bulk retrieval operations
     - Attribute-based filtering capabilities
-    
+
     This abstraction enables easy switching between different storage backends and
     facilitates unit testing by allowing mock implementations.
     """
@@ -37,11 +37,11 @@ class Repository(ABC):
 
         Args:
             obj: The domain entity object to be stored
-            
+
         Raises:
             Exception: Implementation-specific exceptions for storage failures,
                       constraint violations, or validation errors
-                      
+
         Example:
             repository.add(user_instance)  # Stores user in underlying storage
         """
@@ -58,10 +58,10 @@ class Repository(ABC):
 
         Args:
             obj_id (str): Unique identifier of the object to retrieve
-            
+
         Returns:
             object or None: The domain entity if found, None if not found
-            
+
         Example:
             user = repository.get("12345")  # Returns User instance or None
         """
@@ -79,11 +79,11 @@ class Repository(ABC):
 
         Returns:
             list: All objects in the repository, empty list if none exist
-            
+
         Performance Note:
             This method loads all entities into memory. Use with caution for
             large datasets and consider implementing pagination in the service layer.
-            
+
         Example:
             all_users = repository.get_all()  # Returns list of all User instances
         """
@@ -97,21 +97,21 @@ class Repository(ABC):
 
         Modifies an existing domain entity in storage. The data parameter can be
         either a dictionary of attributes to update or a complete replacement object.
-        
+
         Implementations should handle partial updates when data is a dictionary,
         updating only the specified attributes while preserving others.
 
         Args:
             obj_id (str): Unique identifier of the object to update
             data (dict or object): Updated attribute data or replacement object
-            
+
         Returns:
             object: The updated domain entity
-            
+
         Raises:
             KeyError: If no object with the given ID exists
             Exception: Implementation-specific exceptions for update failures
-            
+
         Example:
             updated_user = repository.update("12345", {"email": "new@email.com"})
         """
@@ -128,10 +128,10 @@ class Repository(ABC):
 
         Args:
             obj_id (str): Unique identifier of the object to remove
-            
+
         Returns:
             bool: True if object was found and deleted, False if not found
-            
+
         Example:
             success = repository.delete("12345")  # Returns True if deleted
         """
@@ -150,13 +150,13 @@ class Repository(ABC):
         Args:
             attr_name (str): Name of the attribute to filter by
             attr_value: Value to match against the attribute
-            
+
         Returns:
             list: All objects matching the attribute criteria, empty list if none found
-            
+
         Raises:
             AttributeError: If the specified attribute doesn't exist on the model
-            
+
         Example:
             active_users = repository.get_by_attribute("is_active", True)
         """
@@ -172,18 +172,18 @@ class InMemoryRepository(Repository):
     Stores domain entities in a Python dictionary using their 'id' attribute as keys.
     Provides full support for CRUD operations and attribute-based queries without
     requiring an external database or persistence layer.
-    
+
     This implementation is ideal for:
     - Unit testing and development
     - Prototyping and proof-of-concept work
     - Small applications with minimal data requirements
     - Scenarios where data persistence between application restarts is not required
-    
+
     Data Structure:
     - Uses a dictionary (_storage) where keys are object IDs and values are the objects
     - All operations are performed in memory with O(1) access time for ID-based operations
     - Attribute-based queries require O(n) iteration through all stored objects
-    
+
     Limitations:
     - Data is lost when the application terminates
     - No transaction support or ACID guarantees
@@ -194,7 +194,7 @@ class InMemoryRepository(Repository):
     def __init__(self):
         """
         Initialize the in-memory storage.
-        
+
         Creates an empty dictionary to serve as the internal storage mechanism.
         Each object will be stored with its 'id' attribute as the dictionary key.
         """
@@ -204,16 +204,16 @@ class InMemoryRepository(Repository):
     def add(self, obj):
         """
         Add an object to the in-memory storage.
-        
+
         Stores the object in the internal dictionary using its 'id' attribute as the key.
         If an object with the same ID already exists, it will be overwritten.
-        
+
         Args:
             obj: Domain entity with an 'id' attribute
-            
+
         Raises:
             AttributeError: If the object doesn't have an 'id' attribute
-            
+
         Example:
             repository.add(user)  # Stores user with user.id as key
         """
@@ -223,16 +223,16 @@ class InMemoryRepository(Repository):
     def get(self, obj_id):
         """
         Retrieve an object by ID from memory.
-        
+
         Performs dictionary lookup using the provided ID as key.
         Returns None if no object with the given ID exists.
-        
+
         Args:
             obj_id (str): Unique identifier of the object
-            
+
         Returns:
             object or None: The stored object if found, None otherwise
-            
+
         Time Complexity: O(1) - constant time dictionary lookup
         """
         # Retrieve object by ID, return None if not found
@@ -241,13 +241,13 @@ class InMemoryRepository(Repository):
     def get_all(self):
         """
         Return all stored objects as a list.
-        
+
         Extracts all values from the storage dictionary and returns them as a list.
         The order of objects in the list is not guaranteed to be consistent.
-        
+
         Returns:
             list: All stored objects, empty list if storage is empty
-            
+
         Time Complexity: O(n) - creates new list with all stored objects
         """
         # Return all objects as a list
@@ -256,21 +256,21 @@ class InMemoryRepository(Repository):
     def update(self, obj_id, data):
         """
         Update an existing object with new data.
-        
+
         Supports two update modes:
         1. Dictionary mode: Updates specific attributes while preserving others
         2. Object replacement mode: Completely replaces the existing object
-        
+
         Args:
             obj_id (str): ID of the object to update
             data (dict or object): New data or replacement object
-            
+
         Returns:
             object: The updated object
-            
+
         Raises:
             KeyError: If no object with the given ID exists
-            
+
         Example:
             # Partial update
             repository.update("123", {"name": "New Name"})
@@ -294,16 +294,16 @@ class InMemoryRepository(Repository):
     def delete(self, obj_id):
         """
         Remove an object from storage by ID.
-        
+
         Attempts to delete the object with the specified ID from the storage dictionary.
         Returns a boolean indicating whether the deletion was successful.
-        
+
         Args:
             obj_id (str): ID of the object to delete
-            
+
         Returns:
             bool: True if object was found and deleted, False if not found
-            
+
         Time Complexity: O(1) - constant time dictionary deletion
         """
         # Delete object if it exists in storage
@@ -315,23 +315,23 @@ class InMemoryRepository(Repository):
     def get_by_attribute(self, attr_name, attr_value):
         """
         Filter objects by a specific attribute value.
-        
+
         Iterates through all stored objects and returns those where the specified
         attribute equals the given value. Uses Python's getattr() function for
         dynamic attribute access.
-        
+
         Args:
             attr_name (str): Name of the attribute to filter by
             attr_value: Value to match against
-            
+
         Returns:
             list: Objects matching the attribute criteria
-            
+
         Raises:
             AttributeError: If any object doesn't have the specified attribute
-            
+
         Time Complexity: O(n) - must check all stored objects
-        
+
         Example:
             admin_users = repository.get_by_attribute("is_admin", True)
         """
@@ -346,20 +346,20 @@ class SQLAlchemyRepository(Repository):
     Provides CRUD and attribute-based queries using SQLAlchemy ORM for database persistence.
     This implementation offers full ACID transaction support, referential integrity,
     and robust error handling for production database environments.
-    
+
     Features:
     - Automatic transaction management with rollback on errors
     - SQLAlchemy ORM integration for type-safe database operations
     - Support for complex queries and relationships
     - Connection pooling and performance optimization
     - Thread-safe database access
-    
+
     This implementation is suitable for:
     - Production applications requiring data persistence
     - Multi-user environments with concurrent access
     - Applications requiring complex queries and relationships
     - Systems requiring ACID transaction guarantees
-    
+
     Database Support:
     - Compatible with all SQLAlchemy-supported databases (PostgreSQL, MySQL, SQLite, etc.)
     - Automatic schema management through SQLAlchemy migrations
@@ -369,7 +369,7 @@ class SQLAlchemyRepository(Repository):
     def __init__(self, model):
         """
         Initialize the repository with a specific SQLAlchemy model.
-        
+
         Args:
             model: SQLAlchemy model class (e.g., User, Place, Review)
                   This model defines the database table structure and relationships
@@ -379,18 +379,18 @@ class SQLAlchemyRepository(Repository):
     def add(self, obj):
         """
         Add an object to the database with transaction management.
-        
+
         Adds the object to the SQLAlchemy session and commits the transaction.
         If any error occurs during the operation, the transaction is rolled back
         to maintain database consistency.
-        
+
         Args:
             obj: SQLAlchemy model instance to persist
-            
+
         Raises:
             Exception: Database-specific exceptions (constraint violations, connection errors, etc.)
                       Original exception is re-raised after rollback for proper error handling
-                      
+
         Example:
             repository.add(user_instance)  # Commits to database or rolls back on error
         """
@@ -408,16 +408,16 @@ class SQLAlchemyRepository(Repository):
     def get(self, obj_id):
         """
         Retrieve an object by primary key using SQLAlchemy query.
-        
+
         Uses SQLAlchemy's query.get() method which leverages the session cache
         and database primary key for efficient object retrieval.
-        
+
         Args:
             obj_id (str): Primary key value of the object to retrieve
-            
+
         Returns:
             object or None: SQLAlchemy model instance if found, None otherwise
-            
+
         Performance Note:
             This method benefits from SQLAlchemy's first-level cache and identity map
         """
@@ -426,13 +426,13 @@ class SQLAlchemyRepository(Repository):
     def get_all(self):
         """
         Retrieve all objects of this model type from the database.
-        
+
         Executes a SELECT * query for the model's table and returns all records
         as SQLAlchemy model instances. Use with caution for large tables.
-        
+
         Returns:
             list: All model instances from the database
-            
+
         Performance Warning:
             This loads all records into memory. Consider pagination for large datasets.
         """
@@ -441,21 +441,21 @@ class SQLAlchemyRepository(Repository):
     def update(self, obj_id, data):
         """
         Update an existing database record with transaction safety.
-        
+
         Retrieves the object by ID, updates its attributes, and commits the changes.
         Supports dictionary-based partial updates while preserving unchanged attributes.
-        
+
         Args:
             obj_id (str): Primary key of the object to update
             data (dict): Dictionary of attribute names and new values
-            
+
         Returns:
             object: Updated SQLAlchemy model instance
-            
+
         Raises:
             KeyError: If no object with the given ID exists
             Exception: Database-specific exceptions with automatic rollback
-            
+
         Example:
             updated_user = repository.update("123", {"email": "new@email.com"})
         """
@@ -481,16 +481,16 @@ class SQLAlchemyRepository(Repository):
     def delete(self, obj_id):
         """
         Delete an object from the database with transaction safety.
-        
+
         Retrieves the object by ID, removes it from the session, and commits the deletion.
         Handles referential integrity constraints based on database configuration.
-        
+
         Args:
             obj_id (str): Primary key of the object to delete
-            
+
         Returns:
             bool: True if object was found and deleted, False if not found
-            
+
         Raises:
             Exception: Database-specific exceptions (foreign key constraints, etc.)
                       with automatic rollback
@@ -514,21 +514,21 @@ class SQLAlchemyRepository(Repository):
     def get_by_attribute(self, attr_name, attr_value):
         """
         Return all records matching a specific attribute value.
-        
+
         Performs a filtered query using SQLAlchemy's query interface to find all
         records where the specified attribute equals the given value. Always returns
         a list, even if no matches are found.
-        
+
         Args:
             attr_name (str): Name of the model attribute to filter by
             attr_value: Value to match against the attribute
-            
+
         Returns:
             list: All matching model instances, empty list if none found
-            
+
         Raises:
             ValueError: If attr_name is not a valid attribute of the model
-            
+
         Example:
             active_users = repository.get_by_attribute("is_active", True)
             # Generates SQL: SELECT * FROM users WHERE is_active = true
@@ -546,17 +546,17 @@ class SQLAlchemyRepository(Repository):
     def get_amenity_by_name(self, name):
         """
         Retrieve a single amenity by its name.
-        
+
         Specialized query method for finding amenities by their name attribute.
         Uses SQLAlchemy's filter_by for exact string matching and first() to
         return only the first match or None.
-        
+
         Args:
             name (str): The exact name of the amenity to find
-            
+
         Returns:
             object or None: The amenity model instance if found, None otherwise
-            
+
         Example:
             wifi_amenity = repository.get_amenity_by_name("WiFi")
         """

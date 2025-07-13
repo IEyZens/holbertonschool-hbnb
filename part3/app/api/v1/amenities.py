@@ -21,10 +21,10 @@ class AmenityList(Resource):
     This class provides endpoints to create a new amenity or retrieve all existing amenities.
     Input validation is performed using the API model, and business logic is handled by the facade layer.
     Only administrators can create amenities, while amenity retrieval is publicly accessible.
-    
+
     Attributes:
         None
-        
+
     Methods:
         post(): Create a new amenity (admin only)
         get(): Retrieve all amenities
@@ -45,22 +45,22 @@ class AmenityList(Resource):
 
         Expected Input:
             - name (str): Name of the amenity to create
-            
+
         Headers Required:
             Authorization: Bearer <jwt_token> (with admin privileges)
-            
+
         Returns:
             dict: Created amenity with ID and name (201),
                   or error message for invalid input (400),
                   or access denied for non-admin users (403),
                   or internal server error (500)
-                  
+
         Example Success Response:
             {
                 "id": "12345",
                 "name": "WiFi"
             }
-            
+
         Example Error Response:
             {
                 "error": "Admin privileges required"
@@ -77,17 +77,17 @@ class AmenityList(Resource):
         try:
             # Call facade to create new amenity with validation
             new_amenity = facade.create_amenity(amenity_data)
-            
+
             # Return created amenity data with success status
             return {
                 'id': new_amenity.id,
                 'name': new_amenity.name
             }, 201
-            
+
         except ValueError as e:
             # Handle business validation errors with specific error message
             return {'error': str(e)}, 400
-            
+
         except Exception as e:
             # Handle unexpected errors with generic error message
             return {'error': 'Internal server error'}, 500
@@ -99,10 +99,10 @@ class AmenityList(Resource):
 
         This endpoint returns a list of all available amenities in the system.
         No authentication is required for this operation.
-        
+
         Returns:
             list: List of amenities with their IDs and names (200)
-            
+
         Example Response:
             [
                 {"id": "1", "name": "WiFi"},
@@ -112,7 +112,7 @@ class AmenityList(Resource):
         """
         # Retrieve all amenities from the facade layer
         amenities = facade.get_all_amenities()
-        
+
         # Return list of amenities with ID and name for each
         return [{'id': a.id, 'name': a.name} for a in amenities], 200
 
@@ -125,10 +125,10 @@ class AmenityResource(Resource):
     This class provides endpoints to retrieve, update, or delete a specific amenity by its unique ID.
     All business logic is delegated to the facade layer, and input data is strictly validated.
     Update and delete operations require admin privileges.
-    
+
     Attributes:
         None
-        
+
     Methods:
         get(amenity_id): Retrieve specific amenity by ID
         put(amenity_id): Update specific amenity (admin only)
@@ -143,20 +143,20 @@ class AmenityResource(Resource):
 
         This endpoint returns the details of a single amenity identified by the provided ID.
         No authentication is required for this operation.
-        
+
         Args:
             amenity_id (str): Unique identifier of the amenity
-            
+
         Returns:
             dict: Amenity data with ID and name (200),
                   or error message if amenity not found (404)
-                  
+
         Example Success Response:
             {
                 "id": "12345",
                 "name": "WiFi"
             }
-            
+
         Example Error Response:
             {
                 "error": "Amenity not found"
@@ -164,11 +164,11 @@ class AmenityResource(Resource):
         """
         # Retrieve amenity from facade using provided ID
         amenity = facade.get_amenity(amenity_id)
-        
+
         # Check if amenity exists
         if not amenity:
             return {'error': 'Amenity not found'}, 404
-            
+
         # Return amenity data with ID and name
         return {'id': amenity.id, 'name': amenity.name}, 200
 
@@ -188,10 +188,10 @@ class AmenityResource(Resource):
 
         Args:
             amenity_id (str): Unique identifier of the amenity to update
-            
+
         Expected Input:
             - name (str): Updated name for the amenity
-            
+
         Headers Required:
             Authorization: Bearer <jwt_token> (with admin privileges)
 
@@ -200,13 +200,13 @@ class AmenityResource(Resource):
                   or error message for invalid input (400),
                   or access denied for non-admin users (403),
                   or amenity not found (404)
-                  
+
         Example Success Response:
             {
                 "id": "12345",
                 "name": "High-Speed WiFi"
             }
-            
+
         Example Error Response:
             {
                 "error": "Amenity not found"
@@ -223,21 +223,21 @@ class AmenityResource(Resource):
         try:
             # Call facade to update amenity with new data
             amenity_data = facade.update_amenity(amenity_id, amenity_api)
-            
+
             # Check if amenity was found and updated
             if not amenity_data:
                 return {'error': 'Amenity not found'}, 404
-                
+
             # Return updated amenity data
             return {
                 'id': amenity_data.id,
                 'name': amenity_data.name
             }, 200
-            
+
         except ValueError as e:
             # Handle business validation errors
             return {'error': str(e)}, 400
-            
+
         except (ValueError, KeyError):
             # Handle cases where amenity doesn't exist
             return {'error': 'Amenity not found'}, 404
@@ -253,19 +253,19 @@ class AmenityResource(Resource):
         This endpoint removes an amenity from the system using its unique ID.
         Authentication is required and only users with admin privileges can delete amenities.
         On successful deletion, returns an empty response with status 204.
-        
+
         Args:
             amenity_id (str): Unique identifier of the amenity to delete
-            
+
         Headers Required:
             Authorization: Bearer <jwt_token> (with admin privileges)
-            
+
         Returns:
             Empty response (204) on success,
             or error message for access denied (403),
             or amenity not found (404),
             or internal server error (500)
-            
+
         Example Error Response:
             {
                 "error": "Amenity not found"
@@ -279,14 +279,14 @@ class AmenityResource(Resource):
         try:
             # Call facade to delete amenity by ID
             facade.delete_amenity(amenity_id)
-            
+
             # Return empty response with 204 status on successful deletion
             return '', 204
-            
+
         except ValueError:
             # Handle case where amenity doesn't exist
             return {'error': 'Amenity not found'}, 404
-            
+
         except Exception:
             # Handle unexpected errors during deletion
             return {'error': 'Internal server error'}, 500

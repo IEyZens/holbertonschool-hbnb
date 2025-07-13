@@ -21,20 +21,20 @@ class User(BaseModel):
     Attributes:
         id (str): Unique identifier for the user (UUID format)
         first_name (str): User's first name, maximum 50 characters
-        last_name (str): User's last name, maximum 50 characters  
+        last_name (str): User's last name, maximum 50 characters
         email (str): Unique and valid email address, automatically normalized to lowercase
         password (str): Bcrypt-hashed password for authentication
         is_admin (bool): Whether the user has administrative privileges (default: False)
         created_at (datetime): Account creation timestamp (inherited from BaseModel)
         updated_at (datetime): Last account modification timestamp (inherited from BaseModel)
-        
+
     Database Table:
         users: Stores user account information with unique email constraint
-        
+
     Relationships:
         owned_places: One-to-many relationship with Place model (places owned by this user)
         reviews: One-to-many relationship with Review model (reviews written by this user)
-        
+
     Security Features:
         - Email addresses are automatically normalized (stripped and lowercased)
         - Passwords are hashed using bcrypt with automatic salt generation
@@ -47,26 +47,26 @@ class User(BaseModel):
     # Primary key: UUID string identifier
     id = db.Column(db.String(36), primary_key=True,
                    default=lambda: str(uuid.uuid4()))
-    
+
     # User's first name: required, maximum 50 characters
     first_name = db.Column(db.String(50), nullable=False)
-    
+
     # User's last name: required, maximum 50 characters
     last_name = db.Column(db.String(50), nullable=False)
-    
+
     # Email address: required, unique across all users, maximum 120 characters
     email = db.Column(db.String(120), nullable=False, unique=True)
-    
+
     # Hashed password: required, stored as bcrypt hash (128 characters max)
     password = db.Column(db.String(128), nullable=False)
-    
+
     # Admin status: boolean flag for administrative privileges
     is_admin = db.Column(db.Boolean, default=False)
 
     # SQLAlchemy relationship definitions
     # One-to-many: User can own multiple places
     owned_places = relationship('Place', back_populates='owner', lazy=True)
-    
+
     # One-to-many: User can write multiple reviews
     reviews = relationship('Review', back_populates='user', lazy=True)
 
@@ -88,11 +88,11 @@ class User(BaseModel):
         Raises:
             ValueError: For invalid name length, email format, or password requirements
             TypeError: If is_admin is not a boolean type
-            
+
         Example:
             user = User("John", "Doe", "john.doe@example.com", "securepass123")
             admin = User("Jane", "Smith", "jane@admin.com", "adminpass456", True)
-            
+
         Security Notes:
             - Email is automatically normalized (stripped and lowercased)
             - Password is immediately hashed and the plain text is not stored
@@ -131,7 +131,7 @@ class User(BaseModel):
         self.last_name = last_name
         self.email = email
         self.is_admin = is_admin
-        
+
         # Hash the password immediately for security
         self.hash_password(password)
 
@@ -140,18 +140,18 @@ class User(BaseModel):
         Hash the user's password using bcrypt and store it in the password attribute.
 
         Uses bcrypt's built-in salt generation for enhanced security. The original plain text
-        password is not stored anywhere in the system. The resulting hash is stored as a 
+        password is not stored anywhere in the system. The resulting hash is stored as a
         UTF-8 decoded string for database compatibility.
 
         Args:
             password (str): The plain text password to hash
-            
+
         Security Features:
             - Automatic salt generation (different for each password)
             - Adaptive hashing cost (adjustable work factor)
             - Resistant to rainbow table attacks
             - UTF-8 encoding for consistent storage
-            
+
         Example:
             user.hash_password("myplaintextpassword")
             # user.password now contains bcrypt hash like "$2b$12$..."
@@ -171,12 +171,12 @@ class User(BaseModel):
 
         Returns:
             bool: True if password matches the stored hash, False otherwise
-            
+
         Security Features:
             - Constant-time comparison prevents timing attacks
             - Handles salt extraction automatically
             - Safe against hash collision attempts
-            
+
         Example:
             if user.verify_password("userpassword"):
                 # Password is correct, proceed with authentication

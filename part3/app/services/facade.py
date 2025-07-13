@@ -53,12 +53,12 @@ class HBnBFacade:
     def __init__(self):
         """
         Initialize the facade with repository instances for each domain entity.
-        
+
         Sets up the data access layer by creating specialized repository instances
         for each domain model. This establishes the connection between the business
         logic layer and the persistence layer, enabling data operations while
         maintaining clean separation of concerns.
-        
+
         Repository Configuration:
         - UserRepository: Specialized repository with email-based lookup capabilities
         - SQLAlchemyRepository instances: Generic repositories for other domain entities
@@ -67,7 +67,7 @@ class HBnBFacade:
         """
         # Initialize specialized user repository with email lookup capabilities
         self.user_repo = UserRepository()
-        
+
         # Initialize generic SQLAlchemy repositories for other domain entities
         self.place_repo = SQLAlchemyRepository(Place)
         self.review_repo = SQLAlchemyRepository(Review)
@@ -86,7 +86,7 @@ class HBnBFacade:
         Args:
             user_data (dict): User information including:
                 - first_name (str): User's first name
-                - last_name (str): User's last name  
+                - last_name (str): User's last name
                 - email (str): Unique email address
                 - password (str): Plain text password (will be hashed)
                 - is_admin (bool, optional): Admin privileges flag
@@ -101,7 +101,7 @@ class HBnBFacade:
         Example:
             user_data = {
                 "first_name": "John",
-                "last_name": "Doe", 
+                "last_name": "Doe",
                 "email": "john.doe@example.com",
                 "password": "securepassword123",
                 "is_admin": False
@@ -110,10 +110,10 @@ class HBnBFacade:
         """
         # Create User instance with validation (constructor handles password hashing)
         user = User(**user_data)
-        
+
         # Persist user to database through repository
         self.user_repo.add(user)
-        
+
         return user
 
     def get_user(self, user_id):
@@ -139,11 +139,11 @@ class HBnBFacade:
         """
         # Retrieve user from repository by primary key
         user = self.user_repo.get(user_id)
-        
+
         # Validate user exists and raise descriptive error if not found
         if not user:
             raise ValueError("Error ID: The requested ID does not exist.")
-            
+
         return user
 
     def get_user_by_email(self, email):
@@ -172,14 +172,14 @@ class HBnBFacade:
     def get_user_by_id(self, user_id):
         """
         Alternative method for retrieving users by ID.
-        
+
         Provides the same functionality as get_user() but with a more explicit method name.
         This method exists for API consistency and may have different error handling
         in future implementations.
 
         Args:
             user_id (str): UUID of the user to retrieve
-            
+
         Returns:
             User or None: User instance if found, None otherwise
         """
@@ -293,10 +293,10 @@ class HBnBFacade:
         user = self.user_repo.get(user_id)
         if not user:
             raise ValueError("User not found")
-            
+
         # Perform deletion through repository
         self.user_repo.delete(user_id)
-        
+
         return True
 
     # ==================== AMENITY MANAGEMENT OPERATIONS ====================
@@ -325,10 +325,10 @@ class HBnBFacade:
         """
         # Create Amenity instance with validation (constructor handles name formatting)
         amenity = Amenity(**amenity_data)
-        
+
         # Persist amenity to database through repository
         self.amenity_repo.add(amenity)
-        
+
         return amenity
 
     def get_amenity(self, amenity_id):
@@ -353,11 +353,11 @@ class HBnBFacade:
         """
         # Retrieve amenity from repository by primary key
         amenity = self.amenity_repo.get(amenity_id)
-        
+
         # Validate amenity exists and raise descriptive error if not found
         if not amenity:
             raise ValueError("Error ID: The requested ID does not exist.")
-            
+
         return amenity
 
     def get_amenity_by_name(self, name):
@@ -461,10 +461,10 @@ class HBnBFacade:
         amenity = self.amenity_repo.get(amenity_id)
         if not amenity:
             raise ValueError("Amenity not found")
-            
+
         # Perform deletion through repository
         self.amenity_repo.delete(amenity_id)
-        
+
         return True
 
     # ==================== PLACE MANAGEMENT OPERATIONS ====================
@@ -515,7 +515,8 @@ class HBnBFacade:
             new_place = facade.create_place(place_data, user_id)
         """
         # Define and validate required fields
-        required_fields = ['title', 'price', 'latitude', 'longitude', 'max_person']
+        required_fields = ['title', 'price',
+                           'latitude', 'longitude', 'max_person']
 
         # Check for missing required fields
         for field in required_fields:
@@ -525,11 +526,11 @@ class HBnBFacade:
         # Validate pricing constraints (non-negative, allows free places)
         if place_data['price'] < 0:
             raise ValueError("Price must be a non-negative number.")
-            
+
         # Validate occupancy constraints (must be positive)
         if place_data['max_person'] < 1:
             raise ValueError("Max person must be greater than 0.")
-            
+
         # Validate geographic coordinate constraints
         if not (-90 <= place_data['latitude'] <= 90):
             raise ValueError("Latitude must be between -90 and 90 degrees.")
@@ -575,7 +576,7 @@ class HBnBFacade:
 
         # Persist place to database through repository
         self.place_repo.add(place)
-        
+
         return place
 
     def get_place(self, place_id):
@@ -600,11 +601,11 @@ class HBnBFacade:
         """
         # Retrieve place from repository by primary key
         place = self.place_repo.get(place_id)
-        
+
         # Validate place exists and raise descriptive error if not found
         if not place:
             raise ValueError("Error ID: The requested ID does not exist.")
-            
+
         return place
 
     def get_all_places(self):
@@ -689,7 +690,7 @@ class HBnBFacade:
 
         # Persist changes through repository
         self.place_repo.update(place_id, place)
-        
+
         return place
 
     def delete_place(self, place_id):
@@ -715,10 +716,10 @@ class HBnBFacade:
         place = self.place_repo.get(place_id)
         if not place:
             raise ValueError("Place not found")
-            
+
         # Perform deletion through repository
         self.place_repo.delete(place_id)
-        
+
         return True
 
     # ==================== REVIEW MANAGEMENT OPERATIONS ====================
@@ -791,7 +792,7 @@ class HBnBFacade:
 
         # Persist review to database
         self.review_repo.add(review)
-        
+
         # Add review to place's review collection (if method exists)
         place.add_review(review)
 
@@ -819,11 +820,11 @@ class HBnBFacade:
         """
         # Retrieve review from repository by primary key
         review = self.review_repo.get(review_id)
-        
+
         # Validate review exists and raise descriptive error if not found
         if not review:
             raise ValueError("Error ID: The requested ID does not exist.")
-            
+
         return review
 
     def get_all_reviews(self):
@@ -869,7 +870,7 @@ class HBnBFacade:
         place = self.place_repo.get(place_id)
         if not place:
             raise ValueError("Place not found")
-            
+
         # Return reviews through place relationship
         return place.reviews
 
@@ -931,8 +932,8 @@ class HBnBFacade:
         review = self.review_repo.get(review_id)
         if not review:
             raise ValueError("Review not found")
-            
+
         # Perform deletion through repository
         self.review_repo.delete(review_id)
-        
+
         return True

@@ -61,16 +61,16 @@ class AdminPlaceModify(Resource):
     This class provides endpoints for administrators and place owners to manage individual places
     including retrieving, updating, and deleting place listings. Access control ensures only
     admins or the place owner can modify place data.
-    
+
     Attributes:
         None
-        
+
     Methods:
         get(place_id): Retrieve specific place by ID (admin or owner)
         put(place_id): Update specific place (admin or owner)
         delete(place_id): Delete specific place (admin or owner)
     """
-    
+
     @api.response(200, 'Place retrieved successfully')
     @api.response(404, 'Place not found')
     @api.response(403, 'Unauthorized action')
@@ -81,18 +81,18 @@ class AdminPlaceModify(Resource):
 
         This endpoint allows authorized users (admins or place owners) to retrieve detailed
         information about a specific place including owner details and amenities.
-        
+
         Args:
             place_id (str): The UUID of the place to retrieve
-            
+
         Headers Required:
             Authorization: Bearer <jwt_token>
-            
+
         Returns:
             dict: Complete place data including owner and amenities (200),
                   or error message for unauthorized access (403),
                   or place not found (404)
-                  
+
         Example Success Response:
             {
                 "id": "12345",
@@ -114,7 +114,7 @@ class AdminPlaceModify(Resource):
                     {"id": "2", "name": "Pool"}
                 ]
             }
-            
+
         Example Error Response:
             {
                 "error": "Unauthorized action"
@@ -123,7 +123,7 @@ class AdminPlaceModify(Resource):
         # Get current user identity and claims from JWT token
         current_user = get_jwt_identity()
         claims = get_jwt()
-        
+
         # Extract admin status and user ID for authorization
         is_admin = claims.get('is_admin', False)
         user_id = current_user
@@ -131,7 +131,7 @@ class AdminPlaceModify(Resource):
         try:
             # Retrieve place from facade using provided ID
             place = facade.get_place(place_id)
-            
+
         except (ValueError, KeyError):
             # Handle case where place doesn't exist
             return {'error': 'Place not found'}, 404
@@ -173,10 +173,10 @@ class AdminPlaceModify(Resource):
 
         This endpoint allows authorized users to modify place information including
         details, pricing, location, and amenities. All fields are optional for partial updates.
-        
+
         Args:
             place_id (str): The UUID of the place to update
-            
+
         Expected Input:
             - title (str, optional): Updated title of the place
             - description (str, optional): Updated description
@@ -185,17 +185,17 @@ class AdminPlaceModify(Resource):
             - longitude (float, optional): Updated longitude coordinate
             - max_person (int, optional): Updated maximum occupancy
             - amenities (list, optional): Updated list of amenities
-            
+
         Headers Required:
             Authorization: Bearer <jwt_token>
-            
+
         Returns:
             dict: Updated place data (200),
                   or error message for invalid input (400),
                   or unauthorized access (403),
                   or place not found (404),
                   or internal server error (500)
-                  
+
         Example Success Response:
             {
                 "id": "12345",
@@ -208,7 +208,7 @@ class AdminPlaceModify(Resource):
                 "max_person": 6,
                 "amenities": ["WiFi", "Pool", "Gym"]
             }
-            
+
         Example Error Response:
             {
                 "error": "Invalid input data"
@@ -225,7 +225,7 @@ class AdminPlaceModify(Resource):
         try:
             # Verify place exists before attempting update
             place = facade.get_place(place_id)
-            
+
         except (ValueError, KeyError):
             # Handle case where place doesn't exist
             return {'error': 'Place not found'}, 404
@@ -253,11 +253,11 @@ class AdminPlaceModify(Resource):
                 'max_person': place_data.max_person,
                 'amenities': [amenity.name for amenity in place_data.amenities]
             }, 200
-            
+
         except ValueError as e:
             # Handle business validation errors with specific error message
             return {'error': str(e)}, 400
-            
+
         except Exception as e:
             # Handle unexpected errors with detailed error information
             return {'error': 'Internal server error', 'details': str(e)}, 500
@@ -272,19 +272,19 @@ class AdminPlaceModify(Resource):
 
         This endpoint allows authorized users to permanently remove a place listing from the system.
         All associated data (reviews, bookings) may be affected depending on business rules.
-        
+
         Args:
             place_id (str): The UUID of the place to delete
-            
+
         Headers Required:
             Authorization: Bearer <jwt_token>
-            
+
         Returns:
             Empty response (204) on success,
             or error message for unauthorized access (403),
             or place not found (404),
             or internal server error (500)
-            
+
         Example Error Response:
             {
                 "error": "Place not found"
@@ -293,7 +293,7 @@ class AdminPlaceModify(Resource):
         # Get current user identity and claims from JWT token
         current_user = get_jwt_identity()
         claims = get_jwt()
-        
+
         # Extract admin status and user ID for authorization
         is_admin = claims.get('is_admin', False)
         user_id = current_user
@@ -301,7 +301,7 @@ class AdminPlaceModify(Resource):
         try:
             # Verify place exists before attempting deletion
             place = facade.get_place(place_id)
-            
+
         except (ValueError, KeyError):
             # Handle case where place doesn't exist
             return {'error': 'Place not found'}, 404
@@ -313,10 +313,10 @@ class AdminPlaceModify(Resource):
         try:
             # Attempt to delete place through facade
             facade.delete_place(place_id)
-            
+
             # Return empty response with 204 status on successful deletion
             return '', 204
-            
+
         except Exception:
             # Handle unexpected errors during deletion
             return {'error': 'Internal server error'}, 500

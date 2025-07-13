@@ -10,7 +10,7 @@ class Review(BaseModel):
     Entity representing a textual and numerical evaluation made by a user on a place.
 
     This model encapsulates user-generated feedback for rental properties, combining
-    both qualitative text reviews and quantitative ratings. It enforces validation 
+    both qualitative text reviews and quantitative ratings. It enforces validation
     rules and maintains referential integrity between users and places to ensure
     authentic and traceable reviews.
 
@@ -25,20 +25,20 @@ class Review(BaseModel):
         user_id (str): Foreign key referencing the User who wrote the review
         created_at (datetime): Review creation timestamp (inherited from BaseModel)
         updated_at (datetime): Last modification timestamp (inherited from BaseModel)
-        
+
     Database Table:
         reviews: Stores review content and ratings with foreign key relationships
-        
+
     Relationships:
         place: Many-to-one relationship with Place model (the reviewed property)
         user: Many-to-one relationship with User model (the review author)
-        
+
     Validation Rules:
         - Text must be non-empty (minimum 1 character)
         - Text cannot exceed 300 characters for readability
         - Rating must be integer between 1 and 5 (inclusive)
         - Both user and place must be valid instances
-        
+
     Business Rules:
         - Users should not review their own properties (enforced at service layer)
         - One review per user per place (enforced at service layer)
@@ -50,24 +50,26 @@ class Review(BaseModel):
     # Primary key: UUID string identifier
     id = db.Column(db.String(36), primary_key=True,
                    default=lambda: str(uuid.uuid4()))
-    
+
     # Review text content: required, maximum 300 characters
     text = db.Column(db.String(300), nullable=False)
-    
+
     # Numerical rating: required, integer between 1-5
     rating = db.Column(db.Integer, nullable=False)
 
     # Foreign key relationships
     # Reference to the place being reviewed
-    place_id = db.Column(db.String(36), db.ForeignKey('places.id'), nullable=False)
-    
+    place_id = db.Column(db.String(36), db.ForeignKey(
+        'places.id'), nullable=False)
+
     # Reference to the user who wrote the review
-    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey(
+        'users.id'), nullable=False)
 
     # SQLAlchemy relationship definitions
     # Many-to-one: Multiple reviews can be for the same place
     place = relationship('Place', back_populates='reviews')
-    
+
     # Many-to-one: Multiple reviews can be written by the same user
     user = relationship('User', back_populates='reviews')
 
@@ -87,7 +89,7 @@ class Review(BaseModel):
 
         Raises:
             ValueError: If text is empty/too long or rating is outside valid range (1-5)
-            
+
         Example:
             review = Review(
                 text="Great place with excellent amenities!",
@@ -95,14 +97,14 @@ class Review(BaseModel):
                 user=user_instance,
                 place=place_instance
             )
-            
+
         Rating Scale:
             1 - Very Poor (major issues, would not recommend)
-            2 - Poor (significant problems, below expectations)  
+            2 - Poor (significant problems, below expectations)
             3 - Average (acceptable, meets basic expectations)
             4 - Good (above average, minor issues if any)
             5 - Excellent (exceeds expectations, highly recommended)
-            
+
         Text Guidelines:
             - Should be descriptive and helpful for future guests
             - Minimum 1 character to prevent empty reviews
