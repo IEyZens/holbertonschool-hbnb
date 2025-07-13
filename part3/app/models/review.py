@@ -18,17 +18,21 @@ class Review(BaseModel):
 
     __tablename__ = 'reviews'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.String(36), primary_key=True,
+                   default=lambda: str(uuid.uuid4()))
     text = db.Column(db.String(300), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
 
     # Foreign keys
-    place_id = db.Column(db.Integer, db.ForeignKey(
+    place_id = db.Column(db.String(36), db.ForeignKey(
         'places.id'), nullable=False)
     user_id = db.Column(db.String(36), db.ForeignKey(
         'users.id'), nullable=False)
 
-    def __init__(self, text: str, rating: int, place_id: int, user_id: str):
+    place = relationship('Place', back_populates='reviews')
+    user = relationship('User', back_populates='reviews')
+
+    def __init__(self, text: str, rating: int, user, place):
         """
         Initialize a Review entity and validate all its core fields.
 
@@ -58,5 +62,5 @@ class Review(BaseModel):
         # Attribution des attributs à l'instance
         self.text = text
         self.rating = rating
-        self.place_id = place_id
-        self.user_id = user_id
+        self.user = user
+        self.place = place
