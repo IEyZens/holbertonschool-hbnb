@@ -27,6 +27,41 @@ class AdminReviewResource(Resource):
 
     Allows an admin or the review's author to update or delete a review.
     """
+    @api.response(200, 'Review retrieved successfully')
+    @api.response(404, 'Review not found')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
+    def get(self, review_id):
+        """
+        Retrieve a review by its ID. Only admins or the review's author can view it.
+
+        Args:
+            review_id (str): The UUID of the review to retrieve.
+
+        Returns:
+            dict: Review data or error message.
+        """
+        current_user = get_jwt_identity()
+        claims = get_jwt()
+        is_admin = claims.get('is_admin', False)
+        user_id = current_user
+
+        try:
+            review = facade.get_review(review_id)
+        except (ValueError, KeyError):
+            return {'error': 'Review not found'}, 404
+
+        if not is_admin and review.user.id != user_id:
+            return {'error': 'Unauthorized action'}, 403
+
+        return {
+            'id': review.id,
+            'text': review.text,
+            'rating': review.rating,
+            'user_id': review.user.id,
+            'place_id': review.place.id
+        }, 200
+
     @api.expect(review_update_model)
     # Réponse 200 si la mise à jour est effectuée
     @api.response(200, 'Review updated successfully')
@@ -53,10 +88,9 @@ class AdminReviewResource(Resource):
         is_admin = claims.get('is_admin', False)
         user_id = current_user
 
-        # Récupère l'avis à modifier
-        review = facade.get_review(review_id)
-
-        if not review:
+        try:
+            review = facade.get_review(review_id)
+        except (ValueError, KeyError):
             return {'error': 'Review not found'}, 404
 
         if not is_admin and review.user.id != user_id:
@@ -106,10 +140,9 @@ class AdminReviewResource(Resource):
         is_admin = claims.get('is_admin', False)
         user_id = current_user
 
-        # Récupère l'avis à supprimer
-        review = facade.get_review(review_id)
-
-        if not review:
+        try:
+            review = facade.get_review(review_id)
+        except (ValueError, KeyError):
             return {'error': 'Review not found'}, 404
 
         if not is_admin and review.user.id != user_id:
