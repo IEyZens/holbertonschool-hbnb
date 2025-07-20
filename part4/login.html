@@ -4,35 +4,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>HBnB - Login</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/icon.png" type="image/png">
 </head>
 
 <body>
     <header>
         <nav>
-            <a href="index.html" class="nav-link">Home</a>
-            <a href="login.html" class="login-button">Login</a>
-            <img src="/part4/images/logo.png" class="logo" alt="Logo of the project">
+            <div>
+                <img src="images/logo.png" class="logo" alt="HBnB Logo">
+            </div>
+            <div>
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="login.html" class="login-button">Login</a>
+            </div>
         </nav>
     </header>
+
     <main>
         <form id="login-form">
-            <h2>Login</h2>
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
+            <h2>Login to your account</h2>
+
+            <label for="email">Email address:</label>
+            <input type="email" id="email" name="email" required placeholder="Enter your email">
 
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password" required placeholder="Enter your password">
 
             <button type="submit">Login</button>
+
+            <div id="error-message" class="hidden" style="color: red; margin-top: 1rem; text-align: center;"></div>
         </form>
     </main>
-    <script src="scripts.js"></script>
 
     <footer>
-        <p>All rights reserved</p>
+        <p>&copy; 2025 HBnB. All rights reserved.</p>
     </footer>
+
+    <script src="scripts.js"></script>
 </body>
 
 </html>

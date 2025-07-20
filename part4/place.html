@@ -4,42 +4,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Place Details</title>
+    <title>HBnB - Place Details</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/icon.png" type="image/png">
 </head>
 
 <body>
     <header>
         <nav>
-            <a href="index.html" class="nav-link">Home</a>
-            <a href="login.html" class="login-button">Login</a>
-            <img src="/part4/images/logo.png" class="logo" alt="Logo of the project">
+            <div>
+                <img src="images/logo.png" class="logo" alt="HBnB Logo">
+            </div>
+            <div>
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="login.html" class="login-button" id="login-link">Login</a>
+            </div>
         </nav>
     </header>
+
     <main>
-        <section id="place-details">
-            <h2 id="place-name">Place Name</h2>
-            <!-- Place details will be populated dynamically -->
+        <section class="place-details" id="place-details">
+            <div class="place-info">
+                <h1 id="place-name">Loading place details...</h1>
+                <p id="place-description"></p>
+                <div class="price" id="place-price"></div>
+                <p><strong>Host:</strong> <span id="place-host"></span></p>
+                <div class="amenities" id="place-amenities">
+                    <h3>Amenities</h3>
+                    <ul id="amenities-list"></ul>
+                </div>
+            </div>
         </section>
+
         <section id="reviews">
-            <h3>Reviews</h3>
-            <p>Loading reviews...</p>
+            <h2>Reviews</h2>
+            <div id="reviews-container">
+                <p>Loading reviews...</p>
+            </div>
         </section>
-        <section id="add-review">
+
+        <section class="add-review form" id="add-review" style="display: none;">
             <h2>Add a Review</h2>
             <form id="review-form">
-                <label for="review-text">Review:</label>
-                <textarea id="review-text" name="review-text" required></textarea>
+                <label for="review-text">Your Review:</label>
+                <textarea id="review-text" name="review-text" required placeholder="Share your experience about this place..."></textarea>
 
-                <button type="submit">Submit</button>
+                <label for="rating">Rating:</label>
+                <select id="rating" name="rating" required>
+                    <option value="">Select a rating</option>
+                    <option value="1">★☆☆☆☆ (1 star)</option>
+                    <option value="2">★★☆☆☆ (2 stars)</option>
+                    <option value="3">★★★☆☆ (3 stars)</option>
+                    <option value="4">★★★★☆ (4 stars)</option>
+                    <option value="5">★★★★★ (5 stars)</option>
+                </select>
+
+                <button type="submit">Submit Review</button>
             </form>
         </section>
     </main>
-    <script src="scripts.js"></script>
 
     <footer>
-        <p>All rights reserved</p>
+        <p>&copy; 2025 HBnB. All rights reserved.</p>
     </footer>
+
+    <script src="scripts.js"></script>
 </body>
 
 </html>
