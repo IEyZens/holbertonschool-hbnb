@@ -1,12 +1,13 @@
-# HBnB - Part 3: Authentication, Authorization & Persistent Database (SQLAlchemy)
 
-> **Advanced Backend for Airbnb Clone**
-> Secure REST API with JWT authentication, role-based authorization, and full database integration (SQLite/MySQL) using SQLAlchemy.
+# HBnB - Part 4: Simple Web Client (HTML5, CSS3 & JS)
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
-![Flask](https://img.shields.io/badge/Flask-2.x-success)
-![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-ORM-red)
-![JWT](https://img.shields.io/badge/JWT-Authentication-yellow)
+> **Frontend Interface for HBnB Clone**
+> Dynamic web client using vanilla JavaScript, HTML5 & CSS3 to consume the RESTful API with JWT-based authentication.
+
+![HTML5](https://img.shields.io/badge/HTML5-Markup-orange)
+![CSS3](https://img.shields.io/badge/CSS3-Styling-blue)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6-yellow)
+![Frontend](https://img.shields.io/badge/Frontend-VanillaJS-lightgrey)
 ![License](https://img.shields.io/badge/license-Holberton-lightgrey)
 
 ---
@@ -17,378 +18,207 @@
 - [🏗️ Project Structure](#-project-structure)
 - [⚙️ Technologies](#-technologies)
 - [🚀 Getting Started](#-getting-started)
-- [🔧 Configuration](#-configuration)
-- [🧠 Core Business Models & Database Schema](#-core-business-models--database-schema)
-- [🔒 Authentication & Authorization](#-authentication--authorization)
-- [🔌 API Endpoints](#-api-endpoints)
-- [✅ Validation & Security](#-validation--security)
-- [🧪 Testing](#-testing)
-- [🗺️ Database Design Diagram](#-database-design-diagram)
+- [🧠 Functionality Summary](#-functionality-summary)
+- [📄 Pages & Behavior](#-pages--behavior)
 - [📚 Resources](#-resources)
-- [👥 Authors](#-authors)
+- [👥 Author](#-author)
 - [📄 License](#-license)
 
 ---
 
 ## 📘 Overview
+This is **Part 4** of the HBnB project, focused on the **Frontend Web Client**. It connects to the RESTful API developed in previous parts and provides a user-friendly interface to interact with places, reviews, and authentication features.
 
-This is **Part 3** of the HBnB project, a full-stack Airbnb clone focused on robust backend engineering.
-In this phase, the application now features:
+Features implemented in this phase:
+- **Modern JavaScript Frontend**: Full SPA-like behavior using DOM manipulation.
+- **Authentication with JWT**: Login flow managed client-side with token saved in cookies.
+- **Dynamic Rendering**: Places are fetched from the API and rendered dynamically.
+- **Review Submission**: Logged-in users can post reviews, including ratings.
+- **Data Filtering**: Price filter implemented on the home page.
+- **Page Navigation**: Supports multiple views: place list, place detail, login, and add-review.
 
-- **JWT Authentication**: Secure login, protected endpoints, session management.
-- **Role-Based Authorization**: User roles (`admin` vs `regular user`), protected admin endpoints.
-- **Persistent Database**: Full CRUD with **SQLAlchemy ORM**, using **SQLite** for development and ready for **MySQL** in production.
-- **Advanced Data Validation**: Integrity, constraints, and security at the model and API level.
-- **Database Schema Visualization**: Modern ER diagrams with **mermaid.js**.
 
-The backend is now production-ready, scalable, and secure, supporting all major API features with persistent data.
+
+This is **Part 4** of the HBnB project. It introduces a complete frontend using:
+
+- Plain **HTML5/CSS3/JavaScript** (no frameworks)
+- **JWT authentication** stored in cookies
+- **Fetch API** to interact with backend endpoints
+- Dynamic DOM rendering, form handling and validation
+
+All frontend behavior is in a single JavaScript file (`scripts.js`). Pages dynamically load and interact with the backend.
 
 ---
 
 ## 🏗️ Project Structure
 
 ```
-part3/
-├── app/                        # Main application package
-│   ├── __init__.py             # Initializes Flask app and registers namespaces
-│   ├── extensions.py           # Initializes Flask extensions (db, bcrypt, jwt)
-│
-│   ├── api/                    # Presentation layer (RESTful API)
-│   │   ├── __init__.py         # Registers all versioned API namespaces
-│   │   └── v1/                 # Version 1 of the API
-│   │       ├── __init__.py         # Initializes v1 namespace
-│   │       ├── auth.py             # Authentication and authorization utilities (JWT, RBAC)
-│   │       ├── users.py            # Endpoints for User CRUD operations
-│   │       ├── admin_users.py      # Admin-only User endpoints (RBAC)
-│   │       ├── places.py           # Endpoints for Place CRUD operations
-│   │       ├── admin_places.py     # Admin-only Place endpoints
-│   │       ├── reviews.py          # Endpoints for Review CRUD + delete
-│   │       ├── admin_reviews.py    # Admin-only Review endpoints
-│   │       ├── amenities.py        # Endpoints for Amenity CRUD operations
-│   │       └── admin_amenities.py  # Admin-only Amenity endpoints
-│
-│   ├── models/                 # Business logic and domain entities
-│   │   ├── __init__.py         # Initializes models module
-│   │   ├── base_model.py       # BaseModel: shared UUID, timestamps, update()
-│   │   ├── user.py             # User entity with validation
-│   │   ├── place.py            # Place entity with owner, amenities, reviews
-│   │   ├── review.py           # Review entity linked to User and Place
-│   │   └── amenity.py          # Amenity entity
-│
-│   ├── services/               # Application layer using Facade pattern
-│   │   ├── __init__.py         # Creates singleton `facade` instance
-│   │   └── facade.py           # HBnBFacade: central coordinator for logic & data access
-│
-│   └── persistence/            # Persistence layer (in-memory & SQLAlchemy)
-│       ├── __init__.py             # Initializes persistence module
-│       ├── repository.py           # Repository interface + InMemoryRepository + SQLAlchemyRepository
-│       └── user_repository.py      # UserRepository for user-specific queries
+part4/
+├── app/                            # Backend Flask application (same as part3)
+│   ├── api/                        # RESTful API with Flask-RESTx
+│   │   └── v1/
+│   │       ├── auth.py             # JWT login endpoints
+│   │       ├── users.py, places.py, reviews.py, amenities.py, etc.
+│   ├── models/                     # SQLAlchemy models
+│   ├── services/                   # Business logic (Facade pattern)
+│   └── persistence/                # Database repositories
 │
 ├── instance/
-│   └── development.db          # SQLite database for development (ignored in VCS)
+│   └── development.db              # SQLite DB
 │
-├── tests/                      # Unit and integration tests
-│   ├── __init__.py             # Initializes test package
-│   ├── test_base_model.py      # Tests for BaseModel functionality
-│   ├── test_users_api.py       # API tests: /users
-│   ├── test_places_api.py      # API tests: /places
-│   ├── test_reviews_api.py     # API tests: /reviews
-│   ├── test_amenities_api.py   # API tests: /amenities
-│   ├── test_user_model.py      # Model tests: User
-│   ├── test_place_model.py     # Model tests: Place
-│   ├── test_review_model.py    # Model tests: Review
-│   └── test_amenity_model.py   # Model tests: Amenity
+├── doc_images/                     # Documentation screenshots
+│   ├── img_index.png
+│   ├── img_place.png
+│   ├── img_place_review.png
+│   └── img_review.png
 │
-├── config.py                   # App config classes: Config, DevelopmentConfig, ENV loading
-├── run.py                      # Entry point to launch the Flask app
-├── requirements.txt            # Project dependencies (Flask, Flask-RESTx, SQLAlchemy, JWT, etc.)
-└── README.md                   # Project documentation
+├── images/                         # UI icons and logo
+│   ├── icon.png
+│   ├── logo.png
+│   ├── icon_bath.png
+│   ├── icon_bed.png
+│   └── icon_wifi.png
+│
+├── tests/                          # Backend unit and integration tests
+│   └── test_*.py                   # Covers all resources
+│
+├── add_review.html                 # Page to add a new review
+├── index.html                      # Homepage (place list + filter)
+├── login.html                      # JWT login form
+├── place.html                      # View place details and reviews
+├── config.py                       # Environment config for backend
+├── database_diagram.md             # Optional ER diagram
+├── README.md                       # Project documentation (this file)
+├── requirements.txt                # Python dependencies for backend
+├── run.py                          # Flask entry point
+├── scripts.js                      # Main frontend logic (event handlers, fetch requests)
+└── styles.css                      # Styling for all frontend pages
 ```
 
 ---
 
 ## ⚙️ Technologies
+- **HTML5 & CSS3** — page layout and visual design.
+- **JavaScript ES6+** — dynamic behavior and API interaction.
+- **Fetch API** — used to communicate with the backend.
+- **Cookie-based Auth** — stores JWT securely in cookies.
+- **Responsive Design** — built to display well on desktop and mobile.
 
-- **Python 3.8+**
-- **Flask 2.x** — backend web framework
-- **Flask-RESTx** — REST API + Swagger docs
-- **SQLAlchemy** — ORM, full RDBMS abstraction
-- **Alembic** — database migrations
-- **SQLite** — local development database
-- **MySQL** — production database (ready)
-- **Flask-JWT-Extended** — JWT authentication and sessions
-- **bcrypt** — password hashing
-- **python-dotenv** — environment configuration
+
+
+- **HTML5**: semantic markup
+- **CSS3**: custom styling
+- **JavaScript (ES6)**: DOM interaction and Fetch API
+- **Cookies**: store JWT token
+- **REST API**: consumes Flask endpoints from part3
 
 ---
 
 ## 🚀 Getting Started
-
 ### 1. Clone the repository
 
 ```bash
 git clone https://github.com/IEyZens/holbertonschool-hbnb.git
-cd holbertonschool-hbnb/part3
+cd holbertonschool-hbnb/part4
 ```
 
-### 2. Create a virtual environment
+### 2. Launch the backend
+
+Make sure your Flask API (from Part 3) is running:
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-# On Windows: venv\Scripts\activate
-```
-
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Configure environment variables
-
-Create a `.env` file at the root (recommended):
-
-```env
-FLASK_ENV=development
-SECRET_KEY=a-very-secret-key
-DATABASE_URL=sqlite:///hbnb.db
-JWT_SECRET_KEY=another-secret-key
-```
-
-### 5. Initialize the database
-
-```bash
-flask db upgrade
-```
-
-### 6. Run the application
-
-```bash
+cd ../part3
 python run.py
 ```
 
-- API available at: `http://127.0.0.1:5000/api/v1/`
-- Swagger UI: `http://127.0.0.1:5000/`
+### 3. Open the frontend
 
----
-
-## 🔧 Configuration
-
-- All config in `config.py` (supports environment variables and `.env`).
-- Default: SQLite for development, MySQL for production (set via `DATABASE_URL`).
-- JWT and Flask secret keys must be set.
-
----
-
-## 🧠 Core Business Models & Database Schema
-
-All entities extend a shared `BaseModel` (with id, timestamps, update helpers).
-
-### **User**
-
-- Fields: `id`, `first_name`, `last_name`, `email` (unique), `password_hash`, `is_admin`
-- Relationships: Owns many `Place`, writes many `Review`
-- Password stored as bcrypt hash (never in plain text)
-
-### **Place**
-
-- Fields: `id`, `title`, `description`, `price`, `latitude`, `longitude`, `owner_id`
-- Relationships: Many `Review`, many-to-many with `Amenity` (via association table), belongs to `User`
-
-### **Review**
-
-- Fields: `id`, `text`, `rating` (1–5), `user_id`, `place_id`
-- Relationships: Belongs to `User` and `Place`
-
-### **Amenity**
-
-- Fields: `id`, `name`
-- Relationships: Many-to-many with `Place`
-
-#### Example: SQLAlchemy Model (User)
-
-```python
-class User(Base):
-    __tablename__ = 'users'
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    first_name = Column(String(128), nullable=False)
-    last_name = Column(String(128), nullable=False)
-    email = Column(String(256), unique=True, nullable=False)
-    password_hash = Column(String(256), nullable=False)
-    is_admin = Column(Boolean, default=False)
-    # relationships ...
-```
-
----
-
-## 🔒 Authentication & Authorization
-
-- **Registration**: `/api/v1/auth/register` — hashed password, unique email.
-- **Login**: `/api/v1/auth/login` — returns JWT access token.
-- **JWT Verification**: All protected endpoints require a valid token.
-- **Role-Based Access**: Admin-only actions checked via `is_admin`.
-- **Sessionless**: Stateless backend, all session info in JWT.
-
----
-
-## 🔌 API Endpoints
-
-### **Authentication**
-
-| Method | Endpoint         | Description                      |
-| ------ | ---------------- | -------------------------------- |
-| POST   | `/auth/register` | Register a new user              |
-| POST   | `/auth/login`    | Log in, obtain JWT               |
-| GET    | `/auth/me`       | Get current user info (JWT req.) |
-
-### **Users**
-
-| Method | Endpoint      | Description    | Auth Required | Admin Only |
-| ------ | ------------- | -------------- | :-----------: | :--------: |
-| POST   | `/users/`     | Create user    |      Yes      |    Yes     |
-| GET    | `/users/`     | List all users |      Yes      |    Yes     |
-| GET    | `/users/<id>` | Get user by ID |      Yes      |    Yes     |
-| PUT    | `/users/<id>` | Update user    |      Yes      |    Yes     |
-| DELETE | `/users/<id>` | Delete user    |      Yes      |    Yes     |
-
-### **Places**
-
-| Method | Endpoint       | Description     | Auth Required |
-| ------ | -------------- | --------------- | :-----------: |
-| POST   | `/places/`     | Create place    |      Yes      |
-| GET    | `/places/`     | List all places |      No       |
-| GET    | `/places/<id>` | Get place by ID |      No       |
-| PUT    | `/places/<id>` | Update place    |      Yes      |
-| DELETE | `/places/<id>` | Delete place    |      Yes      |
-
-### **Reviews**
-
-| Method | Endpoint                     | Description              | Auth Required |
-| ------ | ---------------------------- | ------------------------ | :-----------: |
-| POST   | `/reviews/`                  | Create review            |      Yes      |
-| GET    | `/reviews/`                  | List all reviews         |      No       |
-| GET    | `/reviews/<id>`              | Get review by ID         |      No       |
-| PUT    | `/reviews/<id>`              | Update review            |      Yes      |
-| DELETE | `/reviews/<id>`              | Delete review            |      Yes      |
-| GET    | `/places/<place_id>/reviews` | List reviews for a place |      No       |
-
-### **Amenities**
-
-| Method | Endpoint          | Description       | Auth Required |
-| ------ | ----------------- | ----------------- | :-----------: |
-| POST   | `/amenities/`     | Create amenity    |      Yes      |
-| GET    | `/amenities/`     | List amenities    |      No       |
-| GET    | `/amenities/<id>` | Get amenity by ID |      No       |
-| PUT    | `/amenities/<id>` | Update amenity    |      Yes      |
-| DELETE | `/amenities/<id>` | Delete amenity    |      Yes      |
-
-**All endpoints return JSON.**
-**Swagger UI available for interactive exploration.**
-
----
-
-## ✅ Validation & Security
-
-- **Password Security**: bcrypt hash, never stored or transmitted in plain.
-- **Email Uniqueness**: enforced at database and API level.
-- **JWT**: All sensitive endpoints protected; tokens required in `Authorization: Bearer`.
-- **Field Validation**: Email format, lat/lon bounds, rating (1-5), required fields.
-- **Input Sanitization**: Prevents SQL injection and XSS.
-- **Admin endpoints**: Only accessible to users with `is_admin=True`.
-
----
-
-## 🗄️ Database Setup
-
-### Initialize Database
-```bash
-# Create database tables and add default data
-python init_db.py
-```
-
-### Reset Database (if needed)
-```bash
-# Remove existing database and recreate
-rm -f instance/development.db
-python init_db.py
-```
-
----
-
-## 🧪 Testing
-
-### 1. Manual (cURL)
+Open `index.html` in your browser (e.g. Chrome):
 
 ```bash
-curl -X POST http://127.0.0.1:5000/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"first_name": "Alice", "last_name": "Smith", "email": "alice@example.com", "password": "supersecret"}'
+open index.html
+# or right-click > "Open with browser"
 ```
 
-### 2. Interactive (Swagger UI)
+Make sure the API is running on `http://localhost:5000`.
 
-Visit [http://127.0.0.1:5000/](http://127.0.0.1:5000/) for live API docs and testing.
 
-### 3. Automated (unittest)
 
+1. Run the backend (from part3)
 ```bash
-python3 -m unittest discover -s tests -p "test_*.py"
+python run.py
+# API: http://localhost:5000/api/v1/
 ```
 
-#### Example: Test JWT-protected endpoint
+2. Open `index.html` in browser (via Live Server or file://)
 
-```python
-def test_protected_route(self):
-    # Login first to get JWT
-    res = self.client.post('/api/v1/auth/login', json={
-        'email': 'alice@example.com',
-        'password': 'supersecret'
-    })
-    token = res.json['access_token']
-    # Access protected endpoint
-    res = self.client.get('/api/v1/users/', headers={
-        'Authorization': f'Bearer {token}'
-    })
-    self.assertEqual(res.status_code, 200)
-```
+> ⚠️ For full functionality (especially auth), a local HTTP server is required (e.g. `Live Server` in VSCode).
 
 ---
 
-## 🗺️ Database Design Diagram
+## 🧠 Functionality Summary
 
-**Entity-Relationship Diagram with mermaid.js:**
+| Page           | Description                                   |
+|----------------|-----------------------------------------------|
+| `login.html`   | Login form, stores JWT in cookie              |
+| `index.html`   | Lists all places (GET /places)                |
+|                | Filter by max price (client-side)             |
+| `place.html`   | Detailed view of a place and its reviews      |
+|                | Adds review if logged in                      |
+| `add_review.html` | Dedicated page to submit a review (with rating) |
 
-```mermaid
-erDiagram
-    USER ||--o{ PLACE : owns
-    USER ||--o{ REVIEW : writes
-    PLACE ||--o{ REVIEW : receives
-    PLACE ||--o{ PLACE_AMENITY : has
-    AMENITY ||--o{ PLACE_AMENITY : is
-```
+---
+
+## 📄 Pages & Behavior
+
+### 🔐 `login.html`
+
+- Submits credentials via POST `/login`
+- On success: JWT stored as `token` in cookie, redirect to `index.html`
+
+### 🏠 `index.html`
+
+- Checks for `token` cookie
+- If present → fetches `/places` with Authorization header
+- Places displayed as `.place-card` dynamically
+- Filter updates visible cards (JS-only)
+
+### 🏡 `place.html?id=<uuid>`
+
+- Gets `id` from query string
+- Fetches `/places/<id>` and loads place + reviews
+- If token present: shows review form
+
+### ✍️ `add_review.html?id=<uuid>`
+
+- Loads place name dynamically
+- Submits new review via POST `/reviews`
+- Requires JWT (`Authorization: Bearer` header)
 
 ---
 
 ## 📚 Resources
+- [MDN JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+- [MDN Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
+- [HTML Living Standard](https://html.spec.whatwg.org/)
+- [CSS Tricks](https://css-tricks.com/)
+- [JWT Introduction](https://jwt.io/introduction/)
 
-- [Flask-JWT-Extended Documentation](https://flask-jwt-extended.readthedocs.io/en/stable/)
-- [SQLAlchemy Documentation](https://docs.sqlalchemy.org/en/20/)
-- [Alembic Migrations](https://alembic.sqlalchemy.org/)
-- [SQLite Documentation](https://sqlite.org/docs.html)
-- [MySQL Documentation](https://dev.mysql.com/doc/)
-- [Mermaid.js ER Diagrams](https://mermaid-js.github.io/mermaid/#/entityRelationshipDiagram)
-- [Flask Documentation](https://flask.palletsprojects.com/en/2.0.x/)
+
+
+- [MDN Web Docs - Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
+- [MDN Web Docs - Working with Forms](https://developer.mozilla.org/en-US/docs/Learn/Forms)
+- [MDN Web Docs - JavaScript Cookies](https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie)
 
 ---
 
-## 👥 Authors
+## 👥 Author
 
-Developed by Thomas Roncin as part of Holberton School's full-stack curriculum.
+Developed by Thomas Roncin — Holberton School Toulouse.
 
 ---
 
 ## 📄 License
 
-This project is for educational purposes and licensed under the Holberton School Terms of Service.
-See [Holberton School’s License Policy](https://www.holbertonschool.com/terms-of-service) for details.
+Licensed under Holberton School Terms of Service.
+For more information, visit [holbertonschool.com](https://www.holbertonschool.com/terms-of-service).
