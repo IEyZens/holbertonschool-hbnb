@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Utilitaire : récupère un cookie par nom
+  const API_BASE_URL = 'http://localhost:5000/api/v1';
+
   function getCookie(name) {
     const cookieArr = document.cookie.split(';');
     for (let cookie of cookieArr) {
@@ -9,10 +10,37 @@ document.addEventListener('DOMContentLoaded', () => {
     return null;
   }
 
-  // Utilitaire : récupère le place_id depuis l’URL
   function getPlaceIdFromURL() {
     const params = new URLSearchParams(window.location.search);
     return params.get('id');
+  }
+
+  function authHeaders(token) {
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+  }
+
+  // Loader show/hide
+  function showLoader() {
+    const loader = document.getElementById('loader');
+    if (loader) loader.style.display = 'block';
+  }
+
+  function hideLoader() {
+    const loader = document.getElementById('loader');
+    if (loader) loader.style.display = 'none';
+  }
+
+  // Show error message visibly or alert fallback
+  function showError(message) {
+    const errorDiv = document.getElementById('error-message');
+    if (errorDiv) {
+      errorDiv.textContent = message;
+    } else {
+      alert(message);
+    }
   }
 
   // ---------- TÂCHE 1 : LOGIN ----------
@@ -30,11 +58,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        const response = await fetch('http://localhost:5000/api/v1/login', {
+        showLoader();
+        const response = await fetch(`${API_BASE_URL}/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
+        hideLoader();
 
         if (response.ok) {
           const data = await response.json();
@@ -45,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
           alert(`Login failed: ${err.message || response.statusText}`);
         }
       } catch (error) {
+        hideLoader();
         alert('Network error: ' + error.message);
       }
     });
@@ -54,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const placesList = document.getElementById('places-list');
   const priceFilter = document.getElementById('price-filter');
   const loginLink = document.getElementById('login-link');
-  let allPlaces = [];
 
   if (placesList && priceFilter) {
     const token = getCookie('token');
@@ -67,23 +97,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchPlaces(token) {
       try {
-        const response = await fetch('http://localhost:5000/api/v1/places', {
-          headers: { 'Authorization': `Bearer ${token}` }
+        showLoader();
+        const response = await fetch(`${API_BASE_URL}/places`, {
+          headers: authHeaders(token)
         });
+        hideLoader();
+
         if (response.ok) {
           const data = await response.json();
-          allPlaces = data;
           displayPlaces(data);
         } else {
-          console.error('Failed to fetch places:', response.statusText);
+          showError('Failed to fetch places: ' + response.statusText);
         }
       } catch (err) {
-        console.error('Error fetching places:', err.message);
+        hideLoader();
+        showError('Error fetching places: ' + err.message);
       }
     }
 
     function displayPlaces(places) {
       placesList.innerHTML = '';
+
+      if (places.length === 0) {
+        placesList.innerHTML = '<p class="empty-message">No places found.</p>';
+        return;
+      }
+
       places.forEach(place => {
         const card = document.createElement('div');
         card.className = 'place-card';
@@ -105,11 +144,23 @@ document.addEventListener('DOMContentLoaded', () => {
       cards.forEach(card => {
         const price = parseFloat(card.getAttribute('data-price'));
         if (selected === 'all' || price <= parseFloat(selected)) {
-          card.style.display = 'block';
+          card.style.opacity = '1';
+          card.style.pointerEvents = 'auto';
+          card.style.transition = 'opacity 0.3s ease';
         } else {
-          card.style.display = 'none';
+          card.style.opacity = '0';
+          card.style.pointerEvents = 'none';
+          card.style.transition = 'opacity 0.3s ease';
         }
       });
+
+      const visibleCards = Array.from(cards).filter(card => card.style.opacity === '1');
+      if (visibleCards.length === 0) {
+        placesList.innerHTML = '<p class="empty-message">No places found for this price filter.</p>';
+      } else {
+        const errorDiv = document.getElementById('error-message');
+        if (errorDiv) errorDiv.textContent = '';
+      }
     });
   }
 
@@ -133,9 +184,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchPlaceDetails(placeId, token) {
       try {
-        const response = await fetch(`http://localhost:5000/api/v1/places/${placeId}`, {
+        showLoader();
+        const response = await fetch(`${API_BASE_URL}/places/${placeId}`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
+        hideLoader();
+
         if (response.ok) {
           const place = await response.json();
           displayPlaceDetails(place);
@@ -143,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
           placeDetails.innerHTML = '<p>Failed to load place details.</p>';
         }
       } catch (error) {
+        hideLoader();
         placeDetails.innerHTML = '<p>Error fetching place details.</p>';
       }
     }
@@ -172,9 +227,6 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         reviewsSection.innerHTML = '<p>No reviews yet.</p>';
       }
-
-      const placeName = document.getElementById('place-name');
-      if (placeName) placeName.textContent = place.name;
     }
 
     fetchPlaceDetails(placeId, token);
@@ -185,6 +237,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const reviewInput = document.getElementById('review');
   const ratingSelect = document.getElementById('rating');
 
+  function appendReview(review) {
+    const reviewsSection = document.getElementById('reviews');
+    if (!reviewsSection) return;
+
+    const card = document.createElement('div');
+    card.className = 'review-card';
+    card.innerHTML = `
+      <p><strong>${review.user_name}:</strong> ${review.text}</p>
+      <p>Rating: ${review.rating}/5</p>
+    `;
+    reviewsSection.appendChild(card);
+  }
+
   if (reviewForm && reviewInput && ratingSelect) {
     const token = getCookie('token');
     const placeId = getPlaceIdFromURL();
@@ -194,19 +259,29 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    if (!placeId) {
+      alert('Missing place ID.');
+      return;
+    }
+
     reviewForm.addEventListener('submit', async (event) => {
       event.preventDefault();
 
-      const reviewText = reviewInput.value.trim();
-      const rating = ratingSelect.value;
+      const submitButton = reviewForm.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
 
-      if (!reviewText || !rating) {
-        alert('Please fill in both review and rating.');
+      const reviewText = reviewInput.value.trim();
+      const rating = parseInt(ratingSelect.value, 10);
+
+      if (!reviewText || !rating || rating < 1 || rating > 5) {
+        alert('Please fill in both review and select a valid rating (1 to 5).');
+        submitButton.disabled = false;
         return;
       }
 
       try {
-        const response = await fetch('http://localhost:5000/api/v1/reviews', {
+        showLoader();
+        const response = await fetch(`${API_BASE_URL}/reviews`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -215,19 +290,25 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify({
             place_id: placeId,
             text: reviewText,
-            rating: parseInt(rating)
+            rating: rating
           })
         });
+        hideLoader();
 
         if (response.ok) {
+          const newReview = await response.json();
           alert('Review submitted successfully!');
           reviewForm.reset();
+          appendReview(newReview);
         } else {
           const err = await response.json();
           alert(`Failed to submit review: ${err.message || response.statusText}`);
         }
       } catch (error) {
+        hideLoader();
         alert('Network error: ' + error.message);
+      } finally {
+        submitButton.disabled = false;
       }
     });
   }
