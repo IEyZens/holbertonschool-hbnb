@@ -7,3 +7,4 @@ sqlalchemy
 flask-sqlalchemy
 pytest
 pytest-flask
+flask-cors
