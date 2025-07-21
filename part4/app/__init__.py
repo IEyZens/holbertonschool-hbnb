@@ -36,6 +36,7 @@ Supported Entity Operations:
 # Import Flask core components for application creation
 from flask import Flask
 from flask_restx import Api
+from flask_cors import CORS
 
 # Import application extensions for database, authentication, and security
 from app.extensions import db, bcrypt, jwt
@@ -158,6 +159,8 @@ def create_app(config_class="config.DevelopmentConfig"):
 
     # SQLAlchemy: Database ORM for data persistence and relationships
     db.init_app(app)
+
+    CORS(app)
 
     # Register API namespaces for user-facing endpoints
     # Users namespace: Registration, profile management, authentication
