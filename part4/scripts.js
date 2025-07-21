@@ -26,10 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
       await submitReview(token, placeId, reviewText, rating);
     });
   }
+
+  fetchPlaces(getCookie('token'));
 });
 
 async function loginUser(email, password) {
-  const response = await fetch('http://localhost:5000/api/v1/auth/login', {
+  const response = await fetch('http://localhost:5000/api/v1/auth/login/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -72,7 +74,7 @@ function checkAuthentication(placeId) {
 }
 
 async function fetchPlaces(token = null) {
-  const response = await fetch('http://localhost:5000/api/v1/places', {
+  const response = await fetch('http://localhost:5000/api/v1/places/', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -89,7 +91,7 @@ async function fetchPlaces(token = null) {
 }
 
 async function fetchPlaceDetails(token, placeId) {
-  const response = await fetch(`http://localhost:5000/api/v1/places/${placeId}`, {
+  const response = await fetch(`http://localhost:5000/api/v1/places/${placeId}/`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -185,7 +187,7 @@ function getPlaceIdFromURL() {
 }
 
 async function submitReview(token, placeId, reviewText, rating) {
-  const response = await fetch('http://localhost:5000/api/v1/reviews', {
+  const response = await fetch('http://localhost:5000/api/v1/reviews/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
