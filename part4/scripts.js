@@ -23,7 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
       event.preventDefault();
       const reviewText = document.getElementById('review').value;
       const rating = document.getElementById('rating').value;
+
+      if (rating === "select") {
+        alert("Please select a valid rating");
+        return;
+      }
+
       await submitReview(token, placeId, reviewText, rating);
+      await fetchReviews(placeId, token);
     });
   }
 
@@ -31,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loginUser(email, password) {
-  const response = await fetch('http://localhost:5000/api/v1/auth/login/', {
+  const response = await fetch('http://localhost:5000/api/v1/auth/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -102,6 +109,7 @@ async function fetchPlaceDetails(token, placeId) {
   if (response.ok) {
     const place = await response.json();
     displayPlaceDetails(place);
+    await fetchReviews(placeId, token);
   } else {
     console.error('Failed to fetch place details:', response.statusText);
   }
@@ -114,11 +122,11 @@ function displayPlaces(places) {
   places.forEach(place => {
     const placeCard = document.createElement('div');
     placeCard.classList.add('place-card');
-    placeCard.setAttribute('data-price', place.price_per_night);
+    placeCard.setAttribute('data-price', place.price);
 
     placeCard.innerHTML = `
-      <h3>${place.name}</h3>
-      <p>Price per night: $${place.price_per_night}</p>
+      <h3>${place.title}</h3>
+      <p>Price per night: $${place.price}</p>
       <button class="details-button">View Details</button>
     `;
 
@@ -131,18 +139,18 @@ function displayPlaceDetails(place) {
   container.innerHTML = '';
 
   const name = document.createElement('h2');
-  name.textContent = place.name;
+  name.textContent = place.title;
 
   const description = document.createElement('p');
   description.textContent = place.description;
 
   const price = document.createElement('p');
-  price.textContent = `Price per night: $${place.price_per_night}`;
+  price.textContent = `Price per night: $${place.price}`;
 
   const amenities = document.createElement('ul');
   place.amenities.forEach(am => {
     const li = document.createElement('li');
-    li.textContent = am;
+    li.textContent = am.name;
     amenities.appendChild(li);
   });
 
@@ -211,4 +219,45 @@ async function handleResponse(response) {
     const error = await response.json();
     alert('Failed to submit review: ' + (error.message || response.statusText));
   }
+}
+
+async function fetchReviews(placeId, token) {
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`http://localhost:5000/api/v1/places/${placeId}/reviews`, { headers });
+    if (!res.ok) throw new Error('Failed to fetch reviews');
+
+    const reviews = await res.json();
+    displayReviews(reviews);
+  } catch (error) {
+    console.error(error);
+    alert('Error loading reviews.');
+  }
+}
+
+function displayReviews(reviews) {
+  const reviewsContainer = document.getElementById('reviews');
+  reviewsContainer.innerHTML = '';
+
+  if (!reviews || reviews.length === 0) {
+    reviewsContainer.textContent = 'No reviews yet.';
+    return;
+  }
+
+  reviews.forEach(review => {
+    const reviewCard = document.createElement('div');
+    reviewCard.classList.add('review-card');
+
+    const stars = '⭐'.repeat(review.rating || 0);
+
+    reviewCard.innerHTML = `
+      <p>${review.comment || ''}</p>
+      <p><strong>User:</strong> ${review.user_name || 'Anonymous'}</p>
+      <p><strong>Rating:</strong> ${stars}</p>
+    `;
+
+    reviewsContainer.appendChild(reviewCard);
+  });
 }
