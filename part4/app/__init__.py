@@ -160,7 +160,7 @@ def create_app(config_class="config.DevelopmentConfig"):
     # SQLAlchemy: Database ORM for data persistence and relationships
     db.init_app(app)
 
-    CORS(app)
+    CORS(app, origins=['http://localhost:8000'], supports_credentials=True)
 
     # Register API namespaces for user-facing endpoints
     # Users namespace: Registration, profile management, authentication
