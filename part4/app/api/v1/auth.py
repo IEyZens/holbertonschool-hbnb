@@ -13,7 +13,7 @@ login_model = api.model('Login', {
 })
 
 
-@api.route('/login')
+@api.route('/login', methods=['POST'])
 class Login(Resource):
     """
     Resource for user authentication (login).
