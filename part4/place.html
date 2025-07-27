@@ -13,13 +13,15 @@
 		<img src="./images/logo.png" alt="Logo" class="logo">
 		<nav>
 			<a href="index.html" id="index-link">Home</a>
-			<a href="login.html" id="login-button">Login</a>
+			<a href="login.html" class="login-button">Login</a>
 		</nav>
 	</header>
 	<main>
 		<section id="place-details">
 			<h2>Place Details</h2>
-			<!-- Place details will be populated dynamically -->
+			<div class="place-info">
+				<!-- Place details will be populated dynamically -->
+			</div>
 		</section>
 		<section id="reviews">
 			<h2>Reviews</h2>
@@ -27,7 +29,8 @@
 		</section>
 		<section id="add-review">
 			<h2>Add a Review</h2>
-			<form id="review-form">
+			<!-- Display only if user is authenticated -->
+			<form id="review-form" class="add-review form">
 				<label for="review-text">Review:</label>
 				<textarea id="review-text" name="review-text" required></textarea>
 
