@@ -13,13 +13,14 @@
 		<img src="./images/logo.png" alt="Logo" class="logo">
 		<nav>
 			<a href="index.html" id="index-link">Home</a>
-			<a href="login.html" class="login-button">Login</a>
+			<a href="login.html" id="login-link" class="login-button" style="display: block;">Login</a>
+			<a href="#" id="logout-link" class="logout-button" style="display: none;">Logout</a>
 		</nav>
 	</header>
 	<main>
 		<section id="place-details">
 			<h2>Place Details</h2>
-			<div class="place-info">
+			<div id="place-info">
 				<!-- Place details will be populated dynamically -->
 			</div>
 		</section>
@@ -27,16 +28,24 @@
 			<h2>Reviews</h2>
 			<!-- Reviews will be populated dynamically -->
 		</section>
-		<section id="add-review">
-			<h2>Add a Review</h2>
-			<!-- Display only if user is authenticated -->
-			<form id="review-form" class="add-review form">
-				<label for="review-text">Review:</label>
-				<textarea id="review-text" name="review-text" required></textarea>
+		<div id="add-review">
+			<h3>Add a Review</h3>
+			<form id="review-form">
+				<label for="review-text">Review:</label><br>
+				<textarea id="review-text" required></textarea><br>
+
+				<label for="review-rating">Rating:</label><br>
+				<select id="review-rating">
+					<option value="1" selected>⭐</option>
+					<option value="2">⭐⭐</option>
+					<option value="3">⭐⭐⭐</option>
+					<option value="4">⭐⭐⭐⭐</option>
+					<option value="5">⭐⭐⭐⭐⭐</option>
+				</select><br><br>
 
 				<button type="submit">Submit</button>
 			</form>
-		</section>
+		</div>
 	</main>
 	<script src="scripts.js"></script>
 	<footer>

@@ -66,6 +66,8 @@ class ReviewList(Resource):
         try:
             # Extract review data from request payload
             review_data = api.payload
+            print('📥 Payload reçu:', review_data)
+            print('🙋‍♂️ Utilisateur ID:', current_user)
 
             # Create new review using facade layer (includes business logic validation)
             new_review = facade.create_review(review_data, current_user)
@@ -76,13 +78,20 @@ class ReviewList(Resource):
                 'text': new_review.text,
                 'rating': new_review.rating,
                 'place_id': new_review.place.id,
-                'user_id': new_review.user.id
+                'user_id': new_review.user.id,
+                'user': {
+                    'id': new_review.user.id,
+                    'first_name': new_review.user.first_name,
+                    'last_name': new_review.user.last_name,
+                    'email': new_review.user.email
+                }
             }, 201
 
         except ValueError as e:
             # Handle business logic validation errors (e.g., user reviewing own place)
             return {'error': str(e)}, 400
         except Exception as e:
+            print('💥 ERREUR inconnue dans POST /reviews/:', str(e))
             # Handle unexpected server errors
             return {'error': 'Internal server error'}, 500
 

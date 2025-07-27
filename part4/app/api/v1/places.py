@@ -34,7 +34,8 @@ review_model = api.model('PlaceReview', {
     'id': fields.String(description='Review ID'),
     'text': fields.String(description='Text of the review'),
     'rating': fields.Integer(description='Rating of the place (1-5)'),
-    'user_id': fields.String(description='ID of the user')
+    'user_id': fields.String(description='ID of the user'),
+    'user': fields.Nested(user_model, description='Reviewing user')
 })
 
 
@@ -268,6 +269,8 @@ class PlaceResource(Resource):
         if not place:
             return {'error': 'Place not found'}, 404
 
+        print('➡️ place retourné depuis backend:', place)
+
         # Return place data
         return {
             'id': place.id,
@@ -277,7 +280,28 @@ class PlaceResource(Resource):
             'latitude': place.latitude,
             'longitude': place.longitude,
             'owner_id': place.owner.id,
-            'max_person': place.max_person
+            'max_person': place.max_person,
+            'amenities': [
+                {
+                    'id': amenity.id,
+                    'name': amenity.name
+                } for amenity in place.amenities
+            ] if place.amenities else [],
+
+            'reviews': [
+                {
+                    'id': review.id,
+                    'text': review.text,
+                    'rating': review.rating,
+                    'user_id': review.user_id,
+                    'user': {
+                        'id': review.user.id,
+                        'first_name': review.user.first_name,
+                        'last_name': review.user.last_name,
+                        'email': review.user.email
+                    } if review.user else None
+                } for review in place.reviews
+            ] if place.reviews else [],
         }, 200
 
     @api.expect(place_update_model)

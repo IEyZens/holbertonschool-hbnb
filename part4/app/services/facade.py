@@ -793,9 +793,6 @@ class HBnBFacade:
         # Persist review to database
         self.review_repo.add(review)
 
-        # Add review to place's review collection (if method exists)
-        place.add_review(review)
-
         return review
 
     def get_review(self, review_id):
