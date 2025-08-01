@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const isPlacePage = document.getElementById('place-details');
   const reviewForm = document.getElementById('review-form');
   const logoutLink = document.getElementById('logout-link');
+  const errorDiv = document.getElementById('global-error');
 
   if (loginForm) {
     loginForm.addEventListener('submit', async (event) => {
@@ -48,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const placeId = getPlaceIdFromURL();
 
     if (!placeId) {
-      console.error("❌ Aucun ID de place dans l'URL.");
       return;
     }
 
@@ -69,10 +69,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const token = getCookie('token');
       const placeId = getPlaceIdFromURL();
       if (!token || !placeId) return;
+
       try {
         await postReview(token, placeId);
       } catch (err) {
-        console.error('❌ Erreur lors de l’ajout de la review:', err);
+        const successDiv = document.getElementById('review-success');
+        if (successDiv) {
+          successDiv.style.display = 'none';
+          successDiv.textContent = '';
+        }
+
+        if (errorDiv) {
+          errorDiv.textContent = 'Un problème est survenu lors du chargement.';
+          errorDiv.style.display = 'block';
+        }
       }
     });
   }
@@ -88,6 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loginUser(email, password) {
+  const errorDiv = document.getElementById('global-error');
+
   const response = await fetch('http://127.0.0.1:5000/api/v1/auth/login', {
     method: 'POST',
     headers: {
@@ -101,7 +113,10 @@ async function loginUser(email, password) {
     document.cookie = `token=${data.access_token}; path=/`;
     window.location.href = 'index.html';
   } else {
-    alert('Login failed: ' + response.statusText);
+    if (errorDiv) {
+      errorDiv.textContent = 'Un problème est survenu lors du chargement.';
+      errorDiv.style.display = 'block';
+    }
   }
 }
 
@@ -149,7 +164,6 @@ async function fetchPlaces(token) {
 
   if (response.ok) {
     const data = await response.json();
-    console.log('Fetched places:', data);
     allPlaces = data;
     displayPlaces(allPlaces);
   } else {
@@ -158,14 +172,12 @@ async function fetchPlaces(token) {
 }
 
 function displayPlaces(places) {
-  console.log('✅ displayPlaces appelée avec :', places);
   const placesList = document.getElementById('places-list');
   const reviewForm = document.getElementById('review-form');
 
   if (!placesList) {
     return;
   }
-  console.log('📌 placesList trouvé ?', placesList);
   placesList.innerHTML = '';
 
   if (reviewForm) {
@@ -204,7 +216,6 @@ function displayPlaces(places) {
     card.appendChild(details);
 
     placesList.appendChild(card);
-    console.log('➡️ ajout du lieu :', element.title);
   });
 }
 
@@ -214,6 +225,8 @@ function getPlaceIdFromURL() {
 }
 
 async function fetchPlaceDetails(token, placeId) {
+  const errorDiv = document.getElementById('global-error');
+
   try {
     const response = await fetch(`http://127.0.0.1:5000/api/v1/places/${placeId}`, {
       method: 'GET',
@@ -226,15 +239,15 @@ async function fetchPlaceDetails(token, placeId) {
     if (response.ok) {
       const place = await response.json();
 
-      console.log('📦 place:', place);
-
       displayPlaceDetails(place);
     } else {
       alert('Failed to fetch place details: ' + response.statusText);
     }
   } catch (error) {
-    console.error('Error: ', error);
-    alert('An error occured while fetching place details.');
+    if (errorDiv) {
+      errorDiv.textContent = 'Un problème est survenu lors du chargement.';
+      errorDiv.style.display = 'block';
+    }
   }
 }
 
@@ -303,6 +316,7 @@ function updateURLParameter(param, value) {
 async function postReview(token, placeId) {
   const reviewText = document.getElementById('review-text').value;
   const ratingValue = parseInt(document.getElementById('review-rating').value);
+  const successDiv = document.getElementById('review-success');
 
   const response = await fetch('http://127.0.0.1:5000/api/v1/reviews/', {
     method: 'POST',
@@ -323,10 +337,19 @@ async function postReview(token, placeId) {
   }
 
   const newReview = await response.json();
-  console.log('✅ Review ajoutée :', newReview);
 
   document.getElementById('review-text').value = '';
   document.getElementById('review-rating').value = '5'; // reset rating
+
+  if (successDiv) {
+    successDiv.textContent = '✅ Votre avis a été ajouté avec succès !';
+    successDiv.style.display = 'block';
+
+    setTimeout(() => {
+      successDiv.style.display = 'none';
+      successDiv.textContent = '';
+    }, 4000);
+  }
 
   addReviewToDOM(newReview);
 }
