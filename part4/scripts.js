@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const reviewForm = document.getElementById('review-form');
   const logoutLink = document.getElementById('logout-link');
   const errorDiv = document.getElementById('global-error');
+  const registerForm = document.getElementById('register-form');
 
   if (loginForm) {
     loginForm.addEventListener('submit', async (event) => {
@@ -94,6 +95,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  if (registerForm) {
+    registerForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const firstName = document.getElementById('first-name').value.trim();
+      const lastName = document.getElementById('last-name').value.trim();
+      const email = document.getElementById('register-email').value.trim();
+      const password = document.getElementById('register-password').value;
+
+      await registerUser(firstName, lastName, email, password);
+    })
+  }
+
   checkAuthentication();
 });
 
@@ -173,27 +187,14 @@ async function fetchPlaces(token) {
 
 function displayPlaces(places) {
   const placesList = document.getElementById('places-list');
-  const reviewForm = document.getElementById('review-form');
-
-  if (!placesList) {
-    return;
-  }
+  const emptyMessage = document.getElementById('empty-message');
   placesList.innerHTML = '';
 
-  if (reviewForm) {
-    reviewForm.addEventListener('submit', async (event) => {
-      event.preventDefault(); // ⛔ Empêche la redirection
-      const reviewText = document.getElementById('review-text').value;
-      const rating = parseInt(document.getElementById('review-rating').value);
-      const token = getCookie('token');
-      const placeId = getPlaceIdFromURL();
-
-      if (!token || !placeId) return;
-
-      await postReview(token, placeId, reviewText, rating);
-      await fetchPlaceDetails(token, placeId); // Rafraîchir les reviews
-    });
+  if (!places || places.length === 0) {
+    if (emptyMessage) emptyMessage.style.display = 'block';
+    return;
   }
+  if (emptyMessage) emptyMessage.style.display = 'none';
 
   places.forEach(element => {
     const card = document.createElement('div');
@@ -375,4 +376,50 @@ function addReviewToDOM(review) {
   reviewCard.appendChild(comment);
 
   reviewsSection.appendChild(reviewCard);
+}
+
+async function registerUser(firstName, lastName, email, password) {
+  const errorDiv = document.getElementById('register-error');
+  if (errorDiv) {
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+  }
+
+  try {
+    const response = await fetch('http://127.0.0.1:5000/api/v1/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        password: password
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      // Si le backend renvoie un token directement
+      if (data.access_token) {
+        document.cookie = `token=${data.access_token}; path=/`;
+        window.location.href = 'index.html';
+      } else {
+        // Sinon, redirige vers login ou affiche un message
+        window.location.href = 'login.html';
+      }
+    } else {
+      const err = await response.json();
+      if (errorDiv) {
+        errorDiv.textContent = err.error || 'Registration failed.';
+        errorDiv.style.display = 'block';
+      }
+    }
+  } catch (err) {
+    if (errorDiv) {
+      errorDiv.textContent = 'A network error occurred.';
+      errorDiv.style.display = 'block';
+    }
+  }
 }

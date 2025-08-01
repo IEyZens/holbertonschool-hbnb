@@ -1,72 +1,268 @@
-/*
-  This is a SAMPLE File to get you started. Follow the instructions on the project to complete the tasks.
-  You'll probably need to override some of theese styles.
-*/
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
+:root {
+    --primary: #2563eb;
+    --accent: #ffb347;
+    --bg: #f7f9fb;
+    --card: #fff;
+    --border: #e0e6ed;
+    --text: #232323;
+    --text-light: #5a6573;
+    --danger: #e74c3c;
+    --success: #1cc88a;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(37, 99, 235, 0.04);
+    --font-main: 'Montserrat', Arial, sans-serif;
 }
 
 body {
-    background-color: #f4f4f4;
-    color: #333;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-main);
 }
 
 header {
-    background-color: #333;
+    background: var(--primary);
     color: #fff;
-    padding: 1rem;
+    padding: 1rem 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-nav a {
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #fff;
+}
+
+.logo {
+    height: 36px;
+    margin-right: 8px;
+    border-radius: 6px;
+}
+
+.brand-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+nav {
+    display: flex;
+    gap: 1.2rem;
+}
+
+nav a,
+.login-button,
+.logout-button,
+.register-button {
     color: #fff;
     text-decoration: none;
-    margin-left: 1rem;
+    padding: 6px 18px;
+    border-radius: var(--radius);
+    background: none;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background 0.15s;
+    cursor: pointer;
 }
 
+nav a.home-button,
 nav a:focus {
-    outline: 2px solid #fff;
+    background: var(--accent);
+    color: var(--primary);
+}
+
+nav a:hover,
+.login-button:hover,
+.logout-button:hover,
+.register-button:hover {
+    background: #eaf1fd;
+    color: var(--primary);
 }
 
 main {
-    padding: 2rem;
+    max-width: 820px;
+    margin: 2rem auto;
+    padding: 1rem;
+    min-height: 70vh;
+}
+
+#filter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+#filter label {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+#price-filter {
+    min-width: 90px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
 }
 
 .place-card,
 .review-card {
-    margin: 20px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
+    background: var(--card);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin: 20px 0;
+    padding: 22px 20px;
 }
 
-.details-button, button {
-    padding: 8px 16px;
-    background-color: #333;
+.place-card h3,
+.review-card h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: var(--primary);
+    font-size: 1.13rem;
+}
+
+.details-button,
+button,
+.login-button,
+.logout-button,
+.register-button {
+    background: var(--primary);
     color: #fff;
     border: none;
-    border-radius: 5px;
+    border-radius: var(--radius);
+    padding: 10px 22px;
+    margin-top: 10px;
     cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background 0.15s;
 }
 
-.details-button:hover, button:hover {
-    background-color: #555;
+.details-button:hover,
+button:hover,
+.login-button:hover,
+.logout-button:hover,
+.register-button:hover {
+    background: var(--accent);
+    color: var(--primary);
 }
 
-input, textarea, select {
-    margin-bottom: 1rem;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 100px;
-    max-width: 400px;
+form {
+    background: var(--card);
+    padding: 25px 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    max-width: 410px;
+    margin: 2rem auto;
+    border: 1px solid var(--border);
 }
 
 form label {
-    margin-top: 1rem;
+    margin-bottom: 7px;
+    font-weight: 600;
     display: block;
-    font-weight: bold;
+    color: var(--primary);
+}
+
+input,
+textarea,
+select {
+    padding: 10px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    width: 100%;
+    font-size: 1rem;
+    margin-bottom: 1.1rem;
+    background: #fafbfc;
+    color: var(--text);
+}
+
+textarea {
+    min-height: 70px;
+    resize: vertical;
+}
+
+.error-message {
+    color: var(--danger);
+    background: #fff5f4;
+    border-left: 4px solid var(--danger);
+    margin-bottom: 1rem;
+    font-weight: 600;
+    padding: 0.7em 1em;
+    border-radius: 7px;
+    font-size: 1rem;
+}
+
+.success-message {
+    color: var(--success);
+    background: #eafaf5;
+    border-left: 4px solid var(--success);
+    margin-bottom: 1rem;
+    font-weight: 600;
+    padding: 0.7em 1em;
+    border-radius: 7px;
+    font-size: 1rem;
+}
+
+ul {
+    margin-bottom: 1rem;
+    margin-left: 1.1rem;
+    list-style: disc inside;
+    padding-left: 0.5em;
+}
+
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.15s;
+    font-weight: 600;
+}
+
+a:hover,
+a:focus {
+    color: var(--accent);
+}
+
+footer {
+    background: var(--primary);
+    color: #fff;
+    text-align: center;
+    padding: 1rem 0;
+    font-size: 1rem;
+    margin-top: 3rem;
+    border-radius: 0 0 10px 10px;
+}
+
+@media (max-width: 700px) {
+    main {
+        padding: 0.5rem;
+    }
+
+    .place-card,
+    .review-card,
+    form {
+        padding: 12px 4px;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.7rem;
+        padding: 0.7rem 0.3rem;
+    }
+
+    nav {
+        gap: 0.7rem;
+    }
+
+    .logo {
+        height: 28px;
+    }
 }

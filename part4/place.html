@@ -6,14 +6,21 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Place Details</title>
 	<link rel="stylesheet" href="styles.css">
+	<link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet">
 </head>
 
 <body>
 	<header>
-		<img src="./images/logo.png" alt="Logo" class="logo">
+		<div class="header-left">
+			<a href="index.html" class="logo-link">
+				<img src="./images/logo.png" alt="Logo" class="logo">
+				<span class="brand-name"></span>
+			</a>
+		</div>
 		<nav>
-			<a href="index.html" id="index-link">Home</a>
-			<a href="login.html" id="login-link" class="login-button" style="display: block;">Login</a>
+			<a href="index.html" id="index-link" class="home-button">Home</a>
+			<a href="login.html" id="login-link" class="login-button">Login</a>
+			<a href="register.html" class="register-button">Sign up</a>
 			<a href="#" id="logout-link" class="logout-button" style="display: none;">Logout</a>
 		</nav>
 	</header>
@@ -31,28 +38,28 @@
 		<div id="add-review">
 			<h3>Add a Review</h3>
 			<form id="review-form">
-				<div id="review-error" class="error-message" style="display: none; color: red;"></div>
-				<div id="review-success" class="success-message" style="display: none; color: green;"></div>
-				<label for="review-text">Review:</label><br>
-				<textarea id="review-text" required></textarea><br>
+				<div id="review-error" class="error-message" style="display: none;"></div>
+				<div id="review-success" class="success-message" style="display: none;"></div>
+				<label for="review-text">Review:</label>
+				<textarea id="review-text" required></textarea>
 
-				<label for="review-rating">Rating:</label><br>
+				<label for="review-rating">Rating:</label>
 				<select id="review-rating">
 					<option value="1" selected>⭐</option>
 					<option value="2">⭐⭐</option>
 					<option value="3">⭐⭐⭐</option>
 					<option value="4">⭐⭐⭐⭐</option>
 					<option value="5">⭐⭐⭐⭐⭐</option>
-				</select><br><br>
+				</select>
 
 				<button type="submit">Submit</button>
 			</form>
 		</div>
 	</main>
-	<script src="scripts.js"></script>
 	<footer>
 		&copy; 2025 - All rights reserved
 	</footer>
+	<script src="scripts.js"></script>
 </body>
 
 </html>

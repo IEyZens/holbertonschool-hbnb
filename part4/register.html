@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="header-left">
+            <a href="index.html" class="logo-link">
+                <img src="./images/logo.png" alt="Logo" class="logo">
+                <span class="brand-name"></span>
+            </a>
+        </div>
+        <nav>
+            <a href="index.html" id="index-link" class="home-button">Home</a>
+            <a href="login.html" class="login-button">Login</a>
+            <a href="register.html" class="register-button active">Sign up</a>
+        </nav>
+    </header>
+    <main>
+        <form id="register-form">
+            <div id="register-error" class="error-message" style="display: none;"></div>
+            <h2>Create an Account</h2>
+            <label for="first-name">First Name:</label>
+            <input type="text" id="first-name" name="first_name" required>
+
+            <label for="last-name">Last Name:</label>
+            <input type="text" id="last-name" name="last_name" required>
+
+            <label for="register-email">Email:</label>
+            <input type="email" id="register-email" name="email" required>
+
+            <label for="register-password">Password:</label>
+            <input type="password" id="register-password" name="password" required>
+
+            <button type="submit">Sign up</button>
+        </form>
+        <p style="text-align:center;margin-top:10px;">Already have an account? <a href="login.html">Login here</a></p>
+    </main>
+    <footer>
+        &copy; 2025 - All rights reserved
+    </footer>
+    <script src="scripts.js"></script>
+</body>
+
+</html>

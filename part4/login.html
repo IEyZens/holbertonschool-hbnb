@@ -6,19 +6,26 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Login</title>
 	<link rel="stylesheet" href="styles.css">
+	<link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet">
 </head>
 
 <body>
 	<header>
-		<img src="./images/logo.png" alt="Logo" class="logo">
+		<div class="header-left">
+			<a href="index.html" class="logo-link">
+				<img src="./images/logo.png" alt="Logo" class="logo">
+				<span class="brand-name"></span>
+			</a>
+		</div>
 		<nav>
-			<a href="index.html" id="index-link">Home</a>
-			<a href="login.html" class="login-button">Login</a>
+			<a href="index.html" id="index-link" class="home-button">Home</a>
+			<a href="login.html" class="login-button active">Login</a>
+			<a href="register.html" class="register-button">Sign up</a>
 		</nav>
 	</header>
 	<main>
 		<form id="login-form">
-			<div id="login-error" class="error-message" style="display: none; color: red;"></div>
+			<div id="global-error" class="error-message" style="display: none;"></div>
 			<h2>Login</h2>
 			<label for="email">Email:</label>
 			<input type="email" id="email" name="email" required>
@@ -28,11 +35,12 @@
 
 			<button type="submit">Login</button>
 		</form>
+		<p style="text-align:center;margin-top:10px;">No account? <a href="register.html">Sign up here</a></p>
 	</main>
-	<script src="scripts.js"></script>
 	<footer>
 		&copy; 2025 - All rights reserved
 	</footer>
+	<script src="scripts.js"></script>
 </body>
 
 </html>
